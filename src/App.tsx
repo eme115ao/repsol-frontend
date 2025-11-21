@@ -1,35 +1,64 @@
 // src/App.tsx
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Produtos";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Deposito from "./pages/Deposito";
-import Levantamento from "./pages/Levantamento";
-import Historico from "./pages/Historico";
-import Perfil from "./pages/Perfil";
-import AdminPanel from "./pages/AdminPanel";
+
+import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-export default function App(){
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+
+import Dashboard from "./pages/Dashboard";
+import Produtos from "./pages/Produtos";
+import ProductDetail from "./pages/ProductDetail";
+
+import Deposito from "./pages/Deposito";
+import ConfirmarDeposito from "./pages/ConfirmarDeposito";
+import Levantamento from "./pages/Levantamento";
+
+import Historico from "./pages/Historico";
+import Perfil from "./pages/Perfil";
+import MeuBanco from "./pages/MeuBanco";
+import Convidar from "./pages/Convidar";
+import Regras from "./pages/Regras";
+import Equipas from "./pages/Equipa";
+
+export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-      <div className="container mx-auto px-4 py-6">
-        <Routes>
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-          <Route path="/deposito" element={<ProtectedRoute><Deposito /></ProtectedRoute>} />
-          <Route path="/levantamento" element={<ProtectedRoute><Levantamento /></ProtectedRoute>} />
-          <Route path="/historico" element={<ProtectedRoute><Historico /></ProtectedRoute>} />
-          <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </div>
+      <Routes>
+        {/* Públicas */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Autenticadas */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/produtos" element={<Produtos />} />
+          <Route path="/produto/:id" element={<ProductDetail />} />
+
+          <Route path="/deposito" element={<Deposito />} />
+          <Route path="/deposito/confirmar" element={<ConfirmarDeposito />} />
+
+          <Route path="/levantamento" element={<Levantamento />} />
+
+          <Route path="/historico" element={<Historico />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/meubanco" element={<MeuBanco />} />
+
+          <Route path="/convidar" element={<Convidar />} />
+          <Route path="/regras" element={<Regras />} />
+          <Route path="/equipas" element={<Equipas />} />
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -1,87 +1,58 @@
-import { useNavigate } from "react-router-dom";
+// src/pages/Home.tsx
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../services/api";
+import { Link } from "react-router-dom";
 
 export default function Home() {
-  const navigate = useNavigate();
+  const [products, setProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await apiGet("/api/products");
+        setProducts(res);
+      } catch (e) {
+        console.log("Erro ao carregar produtos", e);
+      }
+    })();
+  }, []);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-blue-900 to-blue-800 text-white">
-      <div className="w-full max-w-3xl flex justify-between gap-6">
-        {/* Conteúdo principal */}
-        <div className="flex-1 bg-blue-950/50 p-6 rounded-xl shadow-md text-center border border-blue-800">
-          <h1 className="text-2xl font-bold mb-8 text-yellow-400">
-            Plataforma Repsol Invest
-          </h1>
+    <div className="p-4">
 
-          <div className="flex flex-col space-y-4">
-            <button
-              onClick={() => navigate("/deposito")}
-              className="bg-blue-800 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md"
-            >
-              Depósito
-            </button>
-            <button
-              onClick={() => navigate("/levantamento")}
-              className="bg-blue-800 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md"
-            >
-              Levantamento
-            </button>
-            <button
-              onClick={() => navigate("/convidar")}
-              className="bg-blue-800 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md"
-            >
-              Convidar
-            </button>
-            <button
-              onClick={() => navigate("/produtos")}
-              className="bg-blue-800 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md"
-            >
-              Ver Produtos
-            </button>
-            <button
-              onClick={() => navigate("/perfil")}
-              className="bg-blue-800 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md"
-            >
-              Sobre nós
-            </button>
-          </div>
+      <h1 className="text-2xl font-bold mb-4">Repsol Invest</h1>
 
-          <p className="mt-6 text-sm text-blue-300">
-            🚀 Invista e veja seu rendimento crescer automaticamente!
-          </p>
-        </div>
-
-        {/* Caixa lateral */}
-        <div className="w-80 bg-blue-950/50 p-4 rounded-xl shadow-md border border-blue-800">
-          <h2 className="font-bold text-yellow-400 mb-4">Ações rápidas</h2>
-
-          <div className="flex flex-col space-y-2">
-            <button
-              onClick={() => navigate("/deposito")}
-              className="bg-blue-800 hover:bg-blue-700 py-2 rounded-lg"
-            >
-              Depósito
-            </button>
-            <button
-              onClick={() => navigate("/levantamento")}
-              className="bg-blue-800 hover:bg-blue-700 py-2 rounded-lg"
-            >
-              Levantamento
-            </button>
-            <button
-              onClick={() => navigate("/produtos")}
-              className="bg-blue-800 hover:bg-blue-700 py-2 rounded-lg"
-            >
-              Produtos
-            </button>
-          </div>
-
-          <div className="mt-6 text-sm text-blue-300">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" className="accent-yellow-400" /> Ativar modo admin (demo)
-            </label>
-          </div>
-        </div>
+      {/* Destaques */}
+      <div className="bg-orange-600 text-white p-4 rounded-xl shadow mb-6">
+        <h2 className="text-xl font-bold">Ganhe rendimento diário</h2>
+        <p className="text-sm opacity-90">Segurança • Rentabilidade • Automático</p>
       </div>
+
+      {/* Produtos em destaque */}
+      <h2 className="text-lg font-semibold mb-3">Produtos disponíveis</h2>
+
+      <div className="space-y-4">
+        {products.map((p) => (
+          <Link
+            key={p.id}
+            to={`/produto/${p.id}`}
+            className="bg-white p-4 rounded-xl shadow flex justify-between items-center hover:bg-gray-100 transition"
+          >
+            <div>
+              <div className="font-semibold text-gray-800">{p.nome}</div>
+              <div className="text-sm text-gray-500">
+                Mínimo: {p.valorMinimo.toLocaleString()} KZ
+              </div>
+            </div>
+
+            <img
+              src={`/assets/${p.imagem}`}
+              className="w-16 h-16 rounded object-cover"
+            />
+          </Link>
+        ))}
+      </div>
+
     </div>
   );
 }

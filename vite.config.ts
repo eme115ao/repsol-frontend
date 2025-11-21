@@ -2,76 +2,83 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+/**
+ * Vite config with PWA plugin
+ *
+ * Notes:
+ * - Mantém outras configurações do seu projeto
+ * - A opção `registerType: 'autoUpdate'` mantém o SW atualizado automaticamente
+ */
+
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
+        "favicon.svg",
         "favicon.ico",
         "robots.txt",
-        "logo.png",
-        "assets/*.png",
+        "apple-touch-icon.png"
       ],
       manifest: {
-        name: "Plataforma Repsol",
+        name: "Repsol Invest",
         short_name: "Repsol",
-        description: "Gestão de investimentos e produtos energéticos Repsol.",
+        description: "Investimentos com rendimento diário — Repsol Invest",
         theme_color: "#ff6600",
-        background_color: "#fff7ee",
+        background_color: "#ffffff",
         display: "standalone",
-        orientation: "portrait",
         scope: "/",
         start_url: "/",
         icons: [
           {
-            src: "/logo.png",
+            src: "/assets/icons/icon-192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "any maskable"
           },
           {
-            src: "/logo.png",
+            src: "/assets/icons/icon-512.png",
             sizes: "512x512",
             type: "image/png",
-          },
-          {
-            src: "/logo.png",
-            sizes: "1024x1024",
-            type: "image/png",
-            purpose: "maskable",
-          },
-        ],
+            purpose: "any maskable"
+          }
+        ]
       },
       workbox: {
+        // caching rules: precache build assets + runtime caching for API and images
         runtimeCaching: [
           {
-            urlPattern: ({ request }) => request.destination === "document",
+            urlPattern: /^https:\/\/repsol-backend-complete.onrender.com\/api\/.*$/i,
             handler: "NetworkFirst",
             options: {
-              cacheName: "html-cache",
-            },
+              cacheName: "api-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 // 1 hour
+              },
+              networkTimeoutSeconds: 10
+            }
           },
           {
-            urlPattern: ({ request }) =>
-              ["style", "script", "worker"].includes(request.destination),
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "static-resources",
-            },
-          },
-          {
-            urlPattern: ({ request }) => request.destination === "image",
+            urlPattern: /\/assets\/.*\.(png|jpg|jpeg|svg|webp)$/i,
             handler: "CacheFirst",
             options: {
-              cacheName: "image-cache",
+              cacheName: "assets-cache",
               expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 dias
-              },
-            },
-          },
-        ],
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          }
+        ]
       },
-    }),
+      devOptions: {
+        enabled: true, // ativa SW em dev para testes locais (remover se preferir)
+      }
+    })
   ],
+  server: {
+    fs: { allow: [".."] }
+  }
 });

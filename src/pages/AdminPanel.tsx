@@ -1,51 +1,60 @@
 // src/pages/AdminPanel.tsx
-import { useEffect, useState } from "react";
-import api from "../services/api";
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../api";
 
 export default function AdminPanel() {
-  const [allowed, setAllowed] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
-  const phone = localStorage.getItem("userPhone");
+  const [stats, setStats] = useState<any>(null);
+  const [transacoes, setTransacoes] = useState<any[]>([]);
 
   useEffect(() => {
-    // Só permite se telefone igual ao admin "934096717"
-    if (phone === "934096717") {
-      setAllowed(true);
-      loadUsers();
-    } else {
-      setAllowed(false);
-    }
-  }, [phone]);
+    (async () => {
+      try {
+        const s = await apiGet("/api/admin/stats");
+        const t = await apiGet("/api/admin/transacoes");
+        setStats(s || {});
+        setTransacoes(t || []);
+      } catch (err) {
+        console.error("Admin:", err);
+      }
+    })();
+  }, []);
 
-  const loadUsers = async () => {
-    try {
-      const res = await api.get("/admin/users"); // endpoint hipotético, pode falhar se não existir
-      setUsers(res.data);
-    } catch (err) {
-      // ignore — backend pode não ter rota admin
-    }
-  };
-
-  if (!allowed) return <div className="p-6">Painel admin não disponível para este usuário.</div>;
+  if (!stats) return <div className="p-6">Carregando painel...</div>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Painel Admin</h1>
-      <div className="mb-4">Você está logada como admin (telefone: {phone}).</div>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Admin Panel</h1>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 shadow rounded">
+          <div className="text-gray-500 text-sm">Usuários</div>
+          <div className="text-xl font-bold">{stats.totalUsers}</div>
+        </div>
+        <div className="bg-white p-4 shadow rounded">
+          <div className="text-gray-500 text-sm">Investimentos</div>
+          <div className="text-xl font-bold">{stats.totalInvestments}</div>
+        </div>
+        <div className="bg-white p-4 shadow rounded">
+          <div className="text-gray-500 text-sm">Depósitos</div>
+          <div className="text-xl font-bold">{stats.totalDeposits}</div>
+        </div>
+        <div className="bg-white p-4 shadow rounded">
+          <div className="text-gray-500 text-sm">Levantamentos</div>
+          <div className="text-xl font-bold">{stats.totalWithdraws}</div>
+        </div>
+      </div>
 
-      <div>
-        <h2 className="font-semibold mb-2">Usuários</h2>
-        {users.length === 0 ? (
-          <div className="text-gray-500">Sem dados de usuários (ou rota admin não implementada).</div>
-        ) : (
-          <ul>
-            {users.map((u: any) => (
-              <li key={u.id} className="mb-2">
-                {u.phone} — {u.id}
-              </li>
-            ))}
-          </ul>
-        )}
+      <h2 className="text-xl font-bold mt-6 mb-3">Transações Recentes</h2>
+
+      <div className="space-y-3">
+        {transacoes.map(t => (
+          <div key={t.id} className="bg-white p-4 rounded shadow flex justify-between">
+            <div>
+              <div className="font-semibold">{t.tipo}</div>
+              <div className="text-sm text-gray-500">{new Date(t.createdAt).toLocaleString()}</div>
+            </div>
+            <div className="font-semibold">{Number(t.valor).toLocaleString()} KZ</div>
+          </div>
+        ))}
       </div>
     </div>
   );

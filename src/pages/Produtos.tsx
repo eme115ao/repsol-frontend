@@ -1,39 +1,45 @@
 // src/pages/Produtos.tsx
-import { useEffect, useState } from "react";
-import api from "../services/api";
-import ProductCard from "../components/ProductCard";
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../services/api";
+import { Link } from "react-router-dom";
 
-export default function Products() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export default function Produtos() {
+  const [produtos, setProdutos] = useState<any[]>([]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await api.get("/products");
-        setProducts(res.data || []);
-      } catch (err) {
-        setError("Erro ao carregar os produtos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    (async () => {
+      const res = await apiGet("/api/products");
+      setProdutos(res);
+    })();
   }, []);
 
-  if (loading) return <div className="p-6">Carregando produtos...</div>;
-  if (error) return <div className="p-6 text-red-500">{error}</div>;
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Produtos</h1>
-      <div>
-        {/* lista vertical: cada ProductCard tem margin-bottom */}
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Todos os Produtos</h1>
+
+      <div className="grid grid-cols-1 gap-4">
+        {produtos.map((p) => (
+          <Link
+            key={p.id}
+            to={`/produto/${p.id}`}
+            className="bg-white p-4 rounded-xl shadow flex items-center gap-4 hover:bg-gray-100 transition"
+          >
+            <img
+              src={`/assets/${p.imagem}`}
+              className="w-20 h-20 rounded object-cover"
+            />
+
+            <div className="flex-1">
+              <div className="font-semibold">{p.nome}</div>
+              <div className="text-sm text-gray-500">
+                Mínimo: {p.valorMinimo.toLocaleString()} KZ
+              </div>
+              <div className="text-sm text-gray-500">
+                Rendimento: {p.rendimento * 100}% / dia
+              </div>
+            </div>
+          </Link>
         ))}
-        {products.length === 0 && <div>Nenhum produto disponível.</div>}
       </div>
     </div>
   );

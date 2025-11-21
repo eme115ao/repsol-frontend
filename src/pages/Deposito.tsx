@@ -1,68 +1,64 @@
-import { useState } from "react";
-import api from "../services/api";
-import WhatsAppFloating from "../components/WhatsAppFloating";
+// src/pages/Deposito.tsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Deposito() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const navigate = useNavigate();
   const [amount, setAmount] = useState<number | "">("");
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  async function submitDeposit(e: any) {
+  function formatValue(v: number | "") {
+    if (v === "") return "";
+    return Number(v).toLocaleString();
+  }
+
+  function handleConfirm(e: React.FormEvent) {
     e.preventDefault();
-    setMsg("");
-    if (!amount || Number(amount) <= 0) {
-      setMsg("Informe um valor válido.");
+    setError(null);
+
+    const numeric = Number(amount);
+    if (!numeric || numeric <= 0) {
+      setError("Insira um valor válido.");
       return;
     }
 
-    setLoading(true);
-    try {
-      // endpoint /deposito - o backend já tem depósito. Ajuste se necessário.
-      const payload = {
-        userId: user.id,
-        amount: Number(amount),
-      };
-
-      const res = await api.post("/deposito", payload);
-      if (res.data?.ok) {
-        setMsg("Depósito enviado — pendente de aprovação do admin.");
-      } else {
-        setMsg(res.data?.error || "Depósito enviado — aguarde aprovação.");
-      }
-    } catch (e) {
-      setMsg("Erro ao enviar depósito.");
-    } finally {
-      setLoading(false);
-    }
+    // ir para confirmar com state
+    navigate("/deposito/confirmar", { state: { amount: numeric } });
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-orange-600 mb-4">Depósito</h1>
+    <div className="p-6 max-w-lg mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Depositar</h1>
 
-      <div className="bg-white p-4 rounded-xl shadow max-w-md">
-        <p className="mb-3">Saldo atual: <strong>Kz {user?.saldo ?? 0}</strong></p>
-
-        <form onSubmit={submitDeposit} className="space-y-3">
-          <label className="block font-semibold">Valor (Kz)</label>
+      <form onSubmit={handleConfirm} className="bg-white p-6 rounded shadow space-y-4">
+        <label className="block">
+          <span className="text-sm text-gray-600">Valor (KZ)</span>
           <input
             type="number"
-            value={amount as any}
+            min={0}
+            step="1"
+            value={amount === "" ? "" : amount}
             onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
-            className="border p-2 rounded w-full"
-            placeholder="9000"
+            className="w-full p-3 border rounded mt-1"
+            placeholder="Ex: 5000"
           />
+        </label>
 
-          <button disabled={loading} className="bg-orange-600 text-white px-4 py-2 rounded">
-            {loading ? "Enviando..." : "Solicitar Depósito"}
+        {error && <div className="text-red-600 text-sm">{error}</div>}
+
+        <div className="flex gap-2">
+          <button type="submit" className="flex-1 bg-orange-600 text-white py-2 rounded">
+            Confirmar depósito
           </button>
-        </form>
+          <button type="button" onClick={() => { setAmount(""); setError(null); }} className="px-4 py-2 border rounded">
+            Limpar
+          </button>
+        </div>
 
-        {msg && <p className="mt-3">{msg}</p>}
-      </div>
-
-      <WhatsAppFloating />
+        <p className="text-xs text-gray-500 mt-2">
+          Após confirmar, aparecerão os dados bancários para transferência. Use o número do telemóvel como referência.
+        </p>
+      </form>
     </div>
   );
 }

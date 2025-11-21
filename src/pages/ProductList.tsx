@@ -1,28 +1,34 @@
-import { useEffect, useState } from "react";
-import api from "../services/api";
+// src/pages/ProductList.tsx
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../services/api";
+import { Link } from "react-router-dom";
 
 export default function ProductList() {
-  const [produtos, setProdutos] = useState<any[]>([]);
+  const [items, setItems] = useState<any[]>([]);
 
   useEffect(() => {
-    api.get("/produtos").then((res) => setProdutos(res.data));
+    (async () => {
+      const res = await apiGet("/api/products");
+      setItems(res);
+    })();
   }, []);
 
   return (
-    <div className="min-h-screen bg-orange-50 p-6">
-      <h1 className="text-2xl font-bold text-orange-600 mb-6">Produtos</h1>
-      <div className="grid gap-4 md:grid-cols-2">
-        {produtos.map((p) => (
-          <div
-            key={p.id}
-            className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-lg font-semibold">{p.nome}</h2>
-            <p>{p.descricao}</p>
-            <p className="text-orange-600 font-bold">{p.valorMinimo} Kz</p>
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Lista de Produtos</h1>
+
+      {items.map((p) => (
+        <Link
+          key={p.id}
+          to={`/produto/${p.id}`}
+          className="block bg-white p-4 rounded-xl shadow hover:bg-gray-100 mb-3"
+        >
+          <div className="font-semibold">{p.nome}</div>
+          <div className="text-sm text-gray-600">
+            Mínimo: {p.valorMinimo.toLocaleString()} KZ
           </div>
-        ))}
-      </div>
+        </Link>
+      ))}
     </div>
   );
 }

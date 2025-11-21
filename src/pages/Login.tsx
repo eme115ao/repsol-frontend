@@ -1,63 +1,65 @@
 // src/pages/Login.tsx
 import { useState } from "react";
-import api from "../services/api";
+import { apiPost } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: any) => {
+  async function handleLogin(e: any) {
     e.preventDefault();
-    setError("");
+    setLoading(true);
 
     try {
-      const res = await api.post("/auth/login", {
+      const res = await apiPost("/auth/login", {
         phone,
-        password,
+        password
       });
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userId", String(res.data.user.id));
-      localStorage.setItem("userPhone", res.data.user.phone ?? phone);
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("userId", res.user.id);
+      localStorage.setItem("user", JSON.stringify(res.user));
 
-      // Redirect to dashboard
-      window.location.href = "/dashboard";
+      navigate("/dashboard");
     } catch (err: any) {
-      setError("Credenciais inválidas.");
+      alert(err.message || "Erro ao fazer login.");
     }
-  };
+
+    setLoading(false);
+  }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded-xl shadow-md w-80">
-        <h1 className="text-xl font-bold mb-4 text-center">Entrar</h1>
+    <div className="p-5 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-center">Entrar</h1>
 
+      <form onSubmit={handleLogin} className="space-y-4">
         <input
+          className="w-full border p-3 rounded"
           type="text"
           placeholder="Telefone"
-          className="w-full mb-3 p-2 border rounded bg-blue-50"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          required
         />
 
         <input
+          className="w-full border p-3 rounded"
           type="password"
           placeholder="Senha"
-          className="w-full mb-4 p-2 border rounded bg-blue-50"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-        <button type="submit" className="w-full bg-orange-600 text-white py-2 rounded hover:bg-orange-700">
-          Entrar
+        <button
+          className="w-full bg-orange-600 text-white py-3 rounded"
+          disabled={loading}
+        >
+          {loading ? "Entrando..." : "Entrar"}
         </button>
-
-        <div className="text-center mt-3 text-sm">
-          Não tem conta? <a href="/register" className="text-blue-600 underline">Criar agora</a>
-        </div>
       </form>
     </div>
   );

@@ -1,13 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>repsol-frontend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#ff6600" />
+
+    <!-- iOS PWA -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <title>Repsol Invest</title>
+
+    <!-- Tailwind / Vite inject -->
   </head>
+
   <body>
     <div id="root"></div>
+
+    <!-- Main Script -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

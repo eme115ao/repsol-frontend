@@ -1,45 +1,32 @@
-// src/components/WhatsAppButtons.tsx
 import { useState } from "react";
-import { FaWhatsapp } from "react-icons/fa";
-import { motion } from "framer-motion";
 
-export default function WhatsAppButtons() {
+export default function WhatsAppButton() {
   const [open, setOpen] = useState(false);
 
+  // Edite estes links conforme quiser
+  const gerente = "https://wa.me/934096717"; // gerente
+  const grupo = "https://chat.whatsapp.com/SEU_LINK_DO_GRUPO"; // grupo
+
   return (
-    <motion.div
-      className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
+    <div className="fixed right-6 bottom-6 z-50">
       {open && (
-        <div className="flex flex-col gap-2 mb-2">
-          <a
-            href="https://wa.me/244947565811"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition"
-          >
-            💬 Falar com o gerente
+        <div className="mb-2 flex flex-col gap-2">
+          <a href={gerente} target="_blank" rel="noreferrer" className="bg-white px-3 py-2 rounded shadow text-sm">
+            Falar com gerente
           </a>
-          <a
-            href="https://chat.whatsapp.com/HutYfZBPKRd4ORkeV2iN11"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition"
-          >
-            📲 Aderir ao grupo
+          <a href={grupo} target="_blank" rel="noreferrer" className="bg-white px-3 py-2 rounded shadow text-sm">
+            Entrar no grupo
           </a>
         </div>
       )}
 
-      <motion.button
+      <button
         onClick={() => setOpen((s) => !s)}
-        className="bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600"
-        whileHover={{ scale: 1.05 }}
+        className="w-14 h-14 rounded-full bg-green-500 shadow-lg text-white flex items-center justify-center"
+        aria-label="WhatsApp"
       >
-        <FaWhatsapp size={22} />
-      </motion.button>
-    </motion.div>
+        W
+      </button>
+    </div>
   );
 }

@@ -1,20 +1,39 @@
-import React from "react";
+// src/pages/Equipa.tsx
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../api";
 
-const Equipa: React.FC = () => {
+export default function Equipa() {
+  const userId = Number(localStorage.getItem("userId"));
+  const [members, setMembers] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await apiGet(`/api/referral/my/${userId}`);
+        setMembers(res || []);
+      } catch (err) {
+        console.error("Equipa:", err);
+      }
+    })();
+  }, [userId]);
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-10">
-      <h1 className="text-3xl font-bold text-yellow-400 mb-6">Equipe Repsol</h1>
-      <p className="max-w-3xl text-center text-gray-300">
-        A Repsol é formada por uma equipe dedicada e altamente qualificada, com
-        experiência em finanças, tecnologia e gestão de investimentos. Nosso
-        compromisso é garantir transparência, segurança e rentabilidade para
-        todos os usuários.
-      </p>
-      <p className="text-yellow-400 mt-8 font-semibold">
-        Juntos, impulsionamos o futuro do investimento digital. 🚀
-      </p>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Equipa</h1>
+
+      {members.length === 0 && <div className="text-gray-500">Nenhum membro ainda.</div>}
+
+      <div className="space-y-3">
+        {members.map(m => (
+          <div key={m.id} className="bg-white p-4 rounded shadow flex justify-between">
+            <div>
+              <div className="font-semibold">ID: {m.id}</div>
+              <div className="text-sm text-gray-500">{m.phone}</div>
+            </div>
+            <div className="text-sm text-gray-500">{new Date(m.createdAt).toLocaleDateString()}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default Equipa;
+}

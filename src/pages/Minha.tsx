@@ -1,19 +1,24 @@
+// src/pages/Minha.tsx
 import React from "react";
+import { Link } from "react-router-dom";
 
-const Minha: React.FC = () => {
+export default function Minha() {
+  const phone = localStorage.getItem("phone") || "Usuário";
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-10">
-      <h1 className="text-3xl font-bold text-yellow-400 mb-6">Minha Conta</h1>
-      <p className="text-gray-300 text-center max-w-2xl">
-        Aqui você pode gerenciar as informações da sua conta, verificar seus
-        investimentos ativos, rendimentos acumulados e editar seus dados de
-        perfil.  
-      </p>
-      <p className="mt-6 text-yellow-400 font-semibold">
-        ⚙️ Funções de edição e visualização estarão disponíveis no Dashboard.
-      </p>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Minha Conta</h1>
+      <div className="bg-white p-6 rounded shadow max-w-md space-y-3">
+        <div className="font-semibold text-lg">{phone}</div>
+
+        <Link to="/perfil" className="block text-orange-600">Perfil</Link>
+        <Link to="/meubanco" className="block text-orange-600">Meu Banco</Link>
+        <Link to="/historico" className="block text-orange-600">Histórico</Link>
+        <Link to="/equipas" className="block text-orange-600">Equipa</Link>
+        <Link to="/convidar" className="block text-orange-600">Convidar Amigos</Link>
+
+        <button onClick={() => { localStorage.clear(); window.location.href = "/login"; }} className="mt-4 text-red-600">Sair</button>
+      </div>
     </div>
   );
-};
-
-export default Minha;
+}

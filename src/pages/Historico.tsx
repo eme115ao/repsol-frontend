@@ -1,65 +1,54 @@
-import { useEffect, useState } from "react";
-import api from "../services/api";
-import WhatsAppFloating from "../components/WhatsAppFloating";
+// src/pages/Historico.tsx
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../services/api";
 
 export default function Historico() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const userId = Number(localStorage.getItem("userId"));
+  const [lista, setLista] = useState<any[]>([]);
 
   useEffect(() => {
-    async function load() {
-      try {
-        // endpoint /transactions?userId=...
-        const res = await api.get(`/transactions?userId=${user.id}`);
-        // se a API devolver { ok: true, data: [...] }
-        setTransactions(res.data?.data ?? res.data ?? []);
-      } catch (e) {
-        setError("Erro ao buscar histórico.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [user.id]);
+    (async () => {
+      const r = await apiGet(`/api/historico/${userId}`);
+      setLista(r || []);
+    })();
+  }, [userId]);
 
-  if (loading) return <div className="p-4">Carregando histórico...</div>;
-  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  const grupos = lista.reduce((acc: any, item: any) => {
+    const d = item.data.split("T")[0];
+    if (!acc[d]) acc[d] = [];
+    acc[d].push(item);
+    return acc;
+  }, {});
 
-  if (!transactions.length)
-    return (
-      <div className="p-4">
-        <h1 className="text-2xl font-bold text-orange-600 mb-4">Histórico</h1>
-        <div className="bg-white p-4 rounded-xl shadow">Nenhuma transação encontrada.</div>
-        <WhatsAppFloating />
-      </div>
-    );
+  const dias = Object.keys(grupos);
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold text-orange-600 mb-4">Histórico</h1>
 
-      <div className="flex flex-col gap-3">
-        {transactions.map((t) => (
-          <div key={t.id} className="bg-white p-3 rounded-xl shadow flex justify-between items-center">
-            <div>
-              <p className="font-semibold">
-                {t.type || t.tipo || "Transação"} — Kz {t.amount ?? t.valor ?? 0}
-              </p>
-              <p className="text-sm text-gray-600">{new Date(t.createdAt || t.date || t.created_at).toLocaleString()}</p>
-            </div>
+      <h1 className="text-xl font-bold mb-4">Histórico</h1>
 
-            <div className="text-right">
-              <p className={`font-semibold ${t.status === "approved" ? "text-green-600" : (t.status === "rejected" ? "text-red-600" : "text-yellow-600")}`}>
-                {t.status ?? t.estado ?? "pending"}
-              </p>
-            </div>
+      {dias.length === 0 && (
+        <div className="text-gray-500">Nenhum movimento encontrado.</div>
+      )}
+
+      {dias.map((dia) => (
+        <div key={dia} className="mb-6">
+          <h2 className="font-bold mb-2">{dia}</h2>
+
+          <div className="space-y-2">
+            {grupos[dia].map((item: any) => (
+              <div
+                key={item.id}
+                className="bg-white p-3 rounded shadow flex justify-between"
+              >
+                <div>{item.tipo}</div>
+                <div className="font-bold">{item.valor} KZ</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
-      <WhatsAppFloating />
     </div>
   );
 }

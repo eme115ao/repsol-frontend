@@ -1,43 +1,50 @@
 // src/components/ProductCard.tsx
 import React from "react";
 
-type Props = {
-  product: {
-    id: number;
-    nome: string;
-    descricao?: string;
-    valorMinimo: number;
-    rendimento: number;
-    duracaoDias: number;
-    imagem?: string;
-    ativo?: boolean;
-  };
+type Product = {
+  id: number;
+  nome: string;
+  preco: number; // preço em KZ
+  retornoDiario?: number;
+  duracaoDias?: number;
+  imagem?: string | null;
 };
 
-export default function ProductCard({ product }: Props) {
+export default function ProductCard({ product, onInvest }: { product: Product; onInvest?: (p: Product)=>void }) {
+  const imgSrc = product.imagem ? `/assets/${product.imagem}` : "/assets/placeholder.png";
+
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-4 flex gap-4">
-      <div className="w-28 h-20 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-        {product.imagem ? (
-          // imagem em public/assets/...
-          // usamos caminho relativo a /assets/ para Vite
-          <img src={product.imagem.startsWith("http") ? product.imagem : `/assets/${product.imagem}`} alt={product.nome} className="object-cover w-full h-full" />
-        ) : (
-          <div className="text-sm text-gray-500">Sem imagem</div>
-        )}
+    <div className="w-full bg-white rounded-xl shadow-md p-4 flex items-center gap-4 md:gap-6">
+      <div className="flex-shrink-0">
+        <img
+          src={imgSrc}
+          alt={product.nome}
+          onError={(e: any) => (e.currentTarget.src = "/assets/placeholder.png")}
+          className="w-20 h-20 md:w-24 md:h-24 rounded-md object-cover border"
+        />
       </div>
 
       <div className="flex-1">
-        <div className="flex justify-between items-start">
-          <h3 className="font-semibold text-lg">{product.nome}</h3>
-          <div className="font-bold text-green-600">Kz {product.valorMinimo}</div>
-        </div>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-lg md:text-xl font-semibold text-gray-800">{product.nome}</div>
+            <div className="text-sm text-gray-500 mt-1">
+              Preço: <span className="font-semibold">{Number(product.preco).toLocaleString()} KZ</span>
+            </div>
+            <div className="mt-1 text-sm text-gray-500">
+              Retorno diário: <span className="font-semibold">{Number(product.retornoDiario ?? 0).toLocaleString()} KZ</span>
+            </div>
+            <div className="text-sm text-gray-400">Duração: {product.duracaoDias ?? 150} dias</div>
+          </div>
 
-        <p className="text-sm text-gray-600 mt-1">{product.descricao}</p>
-
-        <div className="flex gap-3 mt-3 text-xs text-gray-500">
-          <div>Rendimento: {product.rendimento}%</div>
-          <div>Duração: {product.duracaoDias} dias</div>
+          <div className="ml-4 flex items-center">
+            <button
+              onClick={() => onInvest && onInvest(product)}
+              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2 rounded-md shadow-sm transition"
+            >
+              Comprar
+            </button>
+          </div>
         </div>
       </div>
     </div>
