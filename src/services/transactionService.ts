@@ -1,13 +1,14 @@
-import { apiPost, apiGet, endpoints } from "./api";
+// src/services/transactionService.ts
+import { apiPost, apiGet } from "./api";
 
-export async function deposit(amount: number, bank: string) {
-  return apiPost(endpoints.deposit, { amount, bank });
+export async function deposit(userId: number, amount: number, comprovativo: string) {
+  return apiPost("/transactions/deposit", { userId, amount, comprovativo });
 }
 
-export async function withdraw(amount: number) {
-  return apiPost(endpoints.withdraw, { amount });
+export async function withdraw(userId: number, amount: number) {
+  return apiPost("/transactions/withdraw", { userId, amount });
 }
 
-export async function getHistory() {
-  return apiGet(endpoints.history);
+export async function getPendingWithdrawals() {
+  return apiGet("/transactions/withdraw/pending");
 }

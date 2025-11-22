@@ -1,6 +1,6 @@
 // src/pages/AdminPanel.tsx
 import React, { useEffect, useState } from "react";
-import { apiGet } from "../api";
+import { apiGet } from "../services/api";
 
 export default function AdminPanel() {
   const [stats, setStats] = useState<any>(null);

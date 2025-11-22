@@ -1,5 +1,6 @@
-import { apiGet, endpoints } from "./api";
+// src/services/historicoService.ts
+import { apiGet } from "./api";
 
-export async function getTransactions() {
-  return apiGet(endpoints.history);
+export async function getHistorico(userId: number) {
+  return apiGet(`/transactions/history/${userId}`);
 }

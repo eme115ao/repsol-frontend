@@ -1,5 +1,5 @@
 // src/services/referralService.ts
-import { apiGet } from "./api";
+import { apiGet } from "../services/api";
 
 export type ReferralItem = {
   id: number;
@@ -17,8 +17,8 @@ export async function getReferrals(userId: number | string): Promise<ReferralIte
 }
 
 /**
- * Monta link de convite REAL baseado na configuração atual
- * Exemplo final gerado:
+ * Gera link de convite real baseado no .env
+ * Exemplo final:
  * https://repsol-ag.netlify.app/register?ref=12345
  */
 export function buildInviteLink(userId: number | string, inviteCode?: string) {
@@ -26,11 +26,9 @@ export function buildInviteLink(userId: number | string, inviteCode?: string) {
     (import.meta.env.VITE_APP_URL as string) ||
     window.location.origin;
 
-  // Se houver inviteCode, priorizamos:
   if (inviteCode) {
     return `${base}/register?ref=${encodeURIComponent(inviteCode)}`;
   }
 
-  // Caso não tenha inviteCode, usamos o ID mesmo
   return `${base}/register?ref=${encodeURIComponent(String(userId))}`;
 }

@@ -1,5 +1,5 @@
 // src/pages/MeuBanco.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiGet, apiPut } from "../services/api";
 
 export default function MeuBanco() {
@@ -8,45 +8,48 @@ export default function MeuBanco() {
   const [nome, setNome] = useState("");
   const [banco, setBanco] = useState("");
   const [iban, setIban] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const r = await apiGet(`/api/banco/${userId}`);
-      if (r) {
-        setNome(r.nome || "");
-        setBanco(r.banco || "");
-        setIban(r.iban || "");
-      }
+      const r = await apiGet(`/banco/${userId}`);
+
+      setNome(r.nome || "");
+      setBanco(r.banco || "");
+      setIban(r.iban || "");
+
+      setLoading(false);
     })();
   }, [userId]);
 
   async function salvar() {
-    await apiPut(`/api/banco/${userId}`, {
+    await apiPut(`/banco/${userId}`, {
       nome,
       banco,
-      iban
+      iban,
     });
 
-    alert("Dados bancários atualizados.");
+    alert("Dados bancários atualizados!");
   }
 
+  if (loading) return <div className="p-4">Carregando...</div>;
+
   return (
-    <div className="p-4">
+    <div className="p-4 space-y-4">
+      <h1 className="text-xl font-bold">Meu Banco</h1>
 
-      <h1 className="text-xl font-bold mb-4">Meu Banco</h1>
-
-      <div className="bg-white p-4 rounded shadow space-y-3">
+      <div className="space-y-3 bg-white p-4 rounded shadow">
 
         <input
           className="w-full border p-2 rounded"
-          placeholder="Seu nome"
+          placeholder="Nome completo"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
         />
 
         <input
           className="w-full border p-2 rounded"
-          placeholder="Nome do Banco"
+          placeholder="Banco"
           value={banco}
           onChange={(e) => setBanco(e.target.value)}
         />
@@ -59,13 +62,12 @@ export default function MeuBanco() {
         />
 
         <button
+          className="w-full bg-orange-600 text-white p-3 rounded"
           onClick={salvar}
-          className="bg-orange-600 text-white p-3 rounded w-full"
         >
           Guardar
         </button>
       </div>
-
     </div>
   );
 }

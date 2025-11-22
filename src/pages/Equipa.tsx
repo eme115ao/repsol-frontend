@@ -1,6 +1,6 @@
 // src/pages/Equipa.tsx
 import React, { useEffect, useState } from "react";
-import { apiGet } from "../api";
+import { apiGet } from "../services/api";
 
 export default function Equipa() {
   const userId = Number(localStorage.getItem("userId"));

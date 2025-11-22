@@ -18,11 +18,12 @@ export default function Perfil() {
 
   useEffect(() => {
     (async () => {
-      const res = await apiGet(`/api/users/${userId}`);
+      const res = await apiGet(`/users/${userId}`);
 
       setNome(res.nome || "");
       setPhone(res.phone || "");
       setFoto(res.foto || null);
+
       setLoading(false);
     })();
   }, [userId]);
@@ -41,11 +42,12 @@ export default function Perfil() {
       if (uploadFile) {
         const form = new FormData();
         form.append("file", uploadFile);
-        const up = await apiUpload("/api/upload/profile", form);
+
+        const up = await apiUpload("/upload/profile", form);
         fotoFinal = up.url;
       }
 
-      await apiPut(`/api/users/${userId}`, {
+      await apiPut(`/users/${userId}`, {
         nome,
         foto: fotoFinal,
       });
@@ -62,12 +64,13 @@ export default function Perfil() {
       alert("As senhas não coincidem.");
       return;
     }
+
     if (novaSenha.length < 4) {
       alert("Senha muito curta.");
       return;
     }
 
-    await apiPut("/api/auth/change-pass", {
+    await apiPut("/auth/change-pass", {
       userId,
       novaSenha,
     });

@@ -1,9 +1,10 @@
-import { apiPost, endpoints } from "./api";
+// src/services/authService.ts
+import { apiPost } from "./api";
 
-export async function loginUser(data: { phone: string; password: string }) {
-  return apiPost(endpoints.login, data);
+export async function login(phone: string, password: string) {
+  return apiPost("/auth/login", { phone, password });
 }
 
-export async function registerUser(data: any) {
-  return apiPost(endpoints.register, data);
+export async function register(phone: string, password: string, invitedBy: number | null) {
+  return apiPost("/auth/register", { phone, password, invitedBy });
 }

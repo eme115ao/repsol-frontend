@@ -1,74 +1,109 @@
 // src/services/api.ts
-// Cliente HTTP usado pelo frontend Repsol
+// Helpers simples para chamadas ao backend usando fetch.
+// Usa VITE_API_URL (definido no .env)
 
-const BASE =
-  (import.meta.env.VITE_API_URL as string) ||
-  "https://repsol-backend-complete.onrender.com/api";
+const BASE = import.meta.env.VITE_API_URL as string;
 
-function getToken() {
-  return localStorage.getItem("token") || "";
-}
+type HeadersInput = Record<string, string> | undefined;
 
-function buildHeaders(extra?: Record<string, string>) {
-  const token = getToken();
+function buildHeaders(headers?: HeadersInput) {
+  const token = localStorage.getItem("token");
 
-  return {
+  const h: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(extra || {})
+    ...(headers || {})
   };
-}
 
-async function handle(res: Response) {
-  let data = null;
+  if (token) h["Authorization"] = `Bearer ${token}`;
 
-  try {
-    data = await res.json();
-  } catch {}
-
-  if (!res.ok) {
-    throw new Error(data?.error || `Erro HTTP ${res.status}`);
-  }
-
-  return data;
+  return h;
 }
 
 export async function apiGet<T = any>(path: string): Promise<T> {
-  const res = await fetch(BASE + path, {
+  const res = await fetch(`${BASE}${path}`, {
     method: "GET",
     headers: buildHeaders()
   });
-  return handle(res);
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`GET ${path} failed: ${res.status} — ${text}`);
+  }
+
+  return await res.json();
 }
 
 export async function apiPost<T = any>(
   path: string,
-  body?: any
+  body?: any,
+  headers?: HeadersInput
 ): Promise<T> {
-  const res = await fetch(BASE + path, {
+  const res = await fetch(`${BASE}${path}`, {
     method: "POST",
-    headers: buildHeaders(),
+    headers: buildHeaders(headers),
     body: body ? JSON.stringify(body) : undefined
   });
-  return handle(res);
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`POST ${path} failed: ${res.status} — ${text}`);
+  }
+
+  return await res.json();
 }
 
 export async function apiPut<T = any>(
   path: string,
   body?: any
 ): Promise<T> {
-  const res = await fetch(BASE + path, {
+  const res = await fetch(`${BASE}${path}`, {
     method: "PUT",
     headers: buildHeaders(),
     body: body ? JSON.stringify(body) : undefined
   });
-  return handle(res);
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PUT ${path} failed: ${res.status} — ${text}`);
+  }
+
+  return await res.json();
 }
 
 export async function apiDelete<T = any>(path: string): Promise<T> {
-  const res = await fetch(BASE + path, {
+  const res = await fetch(`${BASE}${path}`, {
     method: "DELETE",
     headers: buildHeaders()
   });
-  return handle(res);
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`DELETE ${path} failed: ${res.status} — ${text}`);
+  }
+
+  return await res.json();
+}
+
+/**
+ * Upload de arquivos (foto de perfil)
+ * NÃO usar JSON aqui.
+ */
+export async function apiUpload(path: string, formData: FormData): Promise<any> {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: token ? `Bearer ${token}` : ""
+      // sem Content-Type -> browser define automaticamente
+    },
+    body: formData
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`UPLOAD ${path} failed: ${res.status} — ${text}`);
+  }
+
+  return await res.json();
 }

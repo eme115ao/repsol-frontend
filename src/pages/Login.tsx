@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
+
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,18 +15,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await apiPost("/auth/login", {
-        phone,
-        password
-      });
+      const data = { phone, password };
+      const res = await apiPost("/auth/login", data);
 
       localStorage.setItem("token", res.token);
-      localStorage.setItem("userId", res.user.id);
+      localStorage.setItem("userId", String(res.user.id));
       localStorage.setItem("user", JSON.stringify(res.user));
 
       navigate("/dashboard");
     } catch (err: any) {
-      alert(err.message || "Erro ao fazer login.");
+      alert("Erro ao fazer login: " + err.message);
     }
 
     setLoading(false);
