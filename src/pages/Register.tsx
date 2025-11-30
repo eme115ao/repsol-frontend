@@ -14,9 +14,9 @@ export default function Register() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const code = params.get("invite");
-    if (code) setInviteCode(code);
-  }, []);
+  const code = params.get("ref");
+  if (code) setInviteCode(code);
+}, []);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
