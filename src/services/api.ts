@@ -19,6 +19,7 @@ function extractError(err: any) {
   return "Erro inesperado na requisição";
 }
 
+// GET
 export async function apiGet<T = any>(url: string): Promise<T> {
   try {
     const token = localStorage.getItem("token");
@@ -36,6 +37,7 @@ export async function apiGet<T = any>(url: string): Promise<T> {
   }
 }
 
+// POST
 export async function apiPost<T = any>(url: string, body?: any): Promise<T> {
   try {
     const token = localStorage.getItem("token");
@@ -49,6 +51,42 @@ export async function apiPost<T = any>(url: string, body?: any): Promise<T> {
     return res.data;
   } catch (err: any) {
     console.error("Erro POST:", err?.response?.data || err);
+    throw new Error(extractError(err));
+  }
+}
+
+// PUT  <<<<<<<<<<<<<<  FALTAVA!
+export async function apiPut<T = any>(url: string, body?: any): Promise<T> {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await api.put<T>(url, body, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+
+    return res.data;
+  } catch (err: any) {
+    console.error("Erro PUT:", err?.response?.data || err);
+    throw new Error(extractError(err));
+  }
+}
+
+// DELETE  <<<<<<<<<<<<<<  FALTAVA!
+export async function apiDelete<T = any>(url: string): Promise<T> {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await api.delete<T>(url, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+
+    return res.data;
+  } catch (err: any) {
+    console.error("Erro DELETE:", err?.response?.data || err);
     throw new Error(extractError(err));
   }
 }
