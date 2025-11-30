@@ -1,94 +1,102 @@
 import React, { useEffect, useState } from "react";
+import { ArrowLeft, Copy } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { apiGet } from "../services/api";
-import { SITE_URL } from "../config/constants";
 
 export default function Equipa() {
-  const [stats, setStats] = useState<any>(null);
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
-  const [codigo, setCodigo] = useState<string>("...");
+  const [inviteCode, setInviteCode] = useState("...");
+  const [total, setTotal] = useState(0);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
+
+  const inviteURL = `${window.location.origin}/#/register?invite=${inviteCode}`;
 
   useEffect(() => {
-    (async () => {
+    async function load() {
       try {
-        const res = await apiGet("/api/referral/stats");
-        setStats(res);
-
         const codeRes = await apiGet("/api/referral/my-code");
-        setCodigo(codeRes.code || "N/A");
+        setInviteCode(codeRes.code || "N/A");
+
+        const totalRes = await apiGet("/api/referral/invite-count");
+        setTotal(totalRes.total || 0);
       } catch (err) {
-        console.error("Erro Equipa:", err);
+        console.error("Erro ao carregar dados da equipa:", err);
       } finally {
         setLoading(false);
       }
-    })();
+    }
+
+    load();
   }, []);
 
-  function copiarLink() {
-    const link = `${SITE_URL}/register?ref=${codigo}`;
-    navigator.clipboard.writeText(link);
-    alert("Link copiado!");
+  function copyLink() {
+    navigator.clipboard.writeText(inviteURL);
+    setCopyStatus("copied");
+    setTimeout(() => setCopyStatus("idle"), 1200);
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-xl text-white bg-gradient-to-br from-purple-600 to-indigo-700">
-        Carregando equipa…
+      <div className="h-screen flex items-center justify-center text-gray-500">
+        Carregando...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-700 to-indigo-600 py-8 px-4">
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-6">
-        <h1 className="text-3xl font-extrabold text-center mb-6 text-gray-900">
-          Minha Equipa
-        </h1>
+    <div className="min-h-screen bg-gray-100 pb-28">
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Card title="Comissões Hoje" value={stats.hoje} />
-          <Card title="Comissões Ontem" value={stats.ontem} />
-          <Card title="Total Comissões" value={stats.totalComissoes} />
-          <Card title="Total Membros" value={stats.totalMembros} />
-          <Card title="Depósitos da Equipa" value={stats.totalDepositos} />
-          <Card title="Saques da Equipa" value={stats.totalSaques} />
-        </div>
+      <header className="bg-white p-4 shadow-sm flex items-center gap-3 sticky top-0 z-20">
+        <ArrowLeft
+          size={22}
+          onClick={() => navigate("/minha")}
+          className="cursor-pointer text-gray-700 active:scale-90 transition"
+        />
+        <h1 className="text-lg font-bold">Minha Equipa</h1>
+      </header>
 
-        <div className="bg-gray-50 rounded-xl shadow p-4 mb-6">
-          <p className="font-semibold text-gray-700 mb-1">Seu link de convite:</p>
+      <div className="p-4 max-w-[550px] mx-auto mt-2">
+
+        {/* CONVITES */}
+        <div className="bg-white shadow rounded-xl p-5 mb-6">
+          <p className="text-gray-600 text-sm mb-2">Seu código de convite:</p>
+
+          <input
+            value={inviteCode}
+            readOnly
+            className="w-full bg-gray-100 px-3 py-2 rounded-lg text-center font-semibold"
+          />
+
+          <p className="text-gray-600 text-sm mt-4 mb-1">Link de convite:</p>
+
           <div className="flex items-center gap-2">
             <input
-              type="text"
-              disabled
-              value={`${SITE_URL}/register?ref=${codigo}`}
-              className="flex-1 bg-white border border-gray-300 p-2 rounded-lg text-gray-900"
+              className="flex-1 bg-gray-100 px-3 py-2 rounded-lg text-sm"
+              value={inviteURL}
+              readOnly
             />
             <button
-              onClick={copiarLink}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold shadow"
+              onClick={copyLink}
+              className="bg-blue-600 text-white p-2 rounded-lg active:scale-95"
             >
-              Copiar
+              <Copy size={18} />
             </button>
           </div>
+
+          {copyStatus === "copied" && (
+            <p className="text-green-500 text-sm mt-2">Link copiado!</p>
+          )}
         </div>
 
-        <div className="bg-gray-50 rounded-xl shadow p-4">
-          <h2 className="font-bold text-gray-900 text-xl">Tamanho da Equipa</h2>
-          <ul className="mt-3 space-y-2 text-gray-800">
-            <li>Nível 1: {stats.nivel1} pessoas</li>
-            <li>Nível 2: {stats.nivel2} pessoas</li>
-            <li>Nível 3: {stats.nivel3} pessoas</li>
-          </ul>
+        {/* TOTAL DE PESSOAS */}
+        <div className="bg-white shadow rounded-xl p-5">
+          <p className="text-gray-600 text-sm mb-1">Total de convidados:</p>
+          <h2 className="text-3xl font-bold">{total}</h2>
         </div>
+
       </div>
-    </div>
-  );
-}
-
-function Card({ title, value }: { title: string; value: number }) {
-  return (
-    <div className="bg-gray-50 shadow rounded-xl p-4 text-center">
-      <p className="text-gray-600 text-sm">{title}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
     </div>
   );
 }
