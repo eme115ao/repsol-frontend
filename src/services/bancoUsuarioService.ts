@@ -1,5 +1,5 @@
 // src/services/bancoUsuariosService.ts
-import { apiGet, apiPost, apiDelete } from "./api";
+import { apiGet, apiPost } from "./api";
 
 const BASE = "/api/bancos/usuario";
 
@@ -16,6 +16,7 @@ export async function adicionarBancoUsuario(data: {
   return apiPost(`${BASE}/criar`, data);
 }
 
+// O backend NÃO usa DELETE real, sempre POST
 export async function removerBancoUsuario(id: number) {
-  return apiDelete(`${BASE}/remover/${id}`);
+  return apiPost(`${BASE}/remover`, { id });
 }

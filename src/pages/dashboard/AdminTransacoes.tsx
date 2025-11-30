@@ -1,13 +1,13 @@
 // src/pages/dashboard/AdminTransacoes.tsx
 import React, { useEffect, useState } from "react";
-import { apiGet, apiPut } from "../../services/api";
+import { apiGet, apiPost } from "../../services/api";
 
 interface Transacao {
   id: number;
   userId: number;
   amount: number;
-  type: string; // deposit | withdraw
-  status: string; // pending | approved | rejected
+  type: string;
+  status: string;
   createdAt: string;
 }
 
@@ -16,7 +16,6 @@ export default function AdminTransacoes() {
   const [loading, setLoading] = useState(true);
   const [allowed, setAllowed] = useState(false);
 
-  // Valida usuário administrador via backend
   useEffect(() => {
     (async () => {
       try {
@@ -30,9 +29,6 @@ export default function AdminTransacoes() {
           return;
         }
 
-        // Carregar transações
-        // ROTA CORRETA DO ADMIN:
-        // GET /admin/transactions
         const res = await apiGet("/admin/transactions");
         setLista(Array.isArray(res) ? res : []);
       } catch (err) {
@@ -45,9 +41,8 @@ export default function AdminTransacoes() {
 
   async function atualizar(id: number, status: string) {
     try {
-      // ROTA CORRETA:
-      // PUT /admin/transactions/:id
-      await apiPut(`/admin/transactions/${id}`, { status });
+      // Backend funciona com POST
+      await apiPost("/admin/transactions/update", { id, status });
 
       setLista((old) =>
         old.map((t) => (t.id === id ? { ...t, status } : t))
@@ -79,10 +74,7 @@ export default function AdminTransacoes() {
 
       <div className="space-y-4">
         {lista.map((t) => (
-          <div
-            key={t.id}
-            className="bg-white border border-slate-200 shadow p-4 rounded-xl"
-          >
+          <div key={t.id} className="bg-white border border-slate-200 shadow p-4 rounded-xl">
             <p className="text-gray-700 font-semibold">
               ID: {t.id} — {t.type === "deposit" ? "Depósito" : "Levantamento"}
             </p>
