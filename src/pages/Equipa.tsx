@@ -3,26 +3,56 @@ import { ArrowLeft, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiGet } from "../services/api";
 
+interface LevelUser {
+  id: number;
+  phone: string;
+  createdAt: string;
+}
+
 export default function Equipa() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [inviteCode, setInviteCode] = useState("...");
-  const [total, setTotal] = useState(0);
+
+  // Dados reais do backend
+  const [inviteCode, setInviteCode] = useState("");
+  const [inviteCount, setInviteCount] = useState(0);
+
+  // Estrutura original — mantida exatamente igual
+  const [stats, setStats] = useState({
+    commissionsToday: 0,
+    commissionsYesterday: 0,
+    commissionsTotal: 0,
+    teamDeposits: 0,
+    teamWithdrawals: 0,
+    teamMembersTotal: 0,
+    level1: [] as LevelUser[],
+    level2: [] as LevelUser[],
+  });
+
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
 
-  const inviteURL = `${window.location.origin}/#/register?invite=${inviteCode}`;
+  // Link de convite original
+  const inviteURL = `${window.location.origin}/#/register?code=${inviteCode}`;
 
   useEffect(() => {
     async function load() {
       try {
+        // Rota real 1
         const codeRes = await apiGet("/api/referral/my-code");
         setInviteCode(codeRes.code || "N/A");
 
-        const totalRes = await apiGet("/api/referral/invite-count");
-        setTotal(totalRes.total || 0);
+        // Rota real 2
+        const countRes = await apiGet("/api/referral/invite-count");
+        setInviteCount(countRes.total || 0);
+
+        // Mantemos a estrutura completa
+        setStats((prev) => ({
+          ...prev,
+          teamMembersTotal: countRes.total || 0,
+        }));
       } catch (err) {
-        console.error("Erro ao carregar dados da equipa:", err);
+        console.error("Erro carregando estatísticas:", err);
       } finally {
         setLoading(false);
       }
@@ -37,6 +67,11 @@ export default function Equipa() {
     setTimeout(() => setCopyStatus("idle"), 1200);
   }
 
+  function getAvatarColor(id: number) {
+    const colors = ["#F97316", "#3B82F6", "#10B981", "#EAB308", "#6366F1"];
+    return colors[id % colors.length];
+  }
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center text-gray-500">
@@ -48,6 +83,7 @@ export default function Equipa() {
   return (
     <div className="min-h-screen bg-gray-100 pb-28">
 
+      {/* HEADER – IDENTICO */}
       <header className="bg-white p-4 shadow-sm flex items-center gap-3 sticky top-0 z-20">
         <ArrowLeft
           size={22}
@@ -59,17 +95,54 @@ export default function Equipa() {
 
       <div className="p-4 max-w-[550px] mx-auto mt-2">
 
-        {/* CONVITES */}
-        <div className="bg-white shadow rounded-xl p-5 mb-6">
-          <p className="text-gray-600 text-sm mb-2">Seu código de convite:</p>
+        {/* GRID PRINCIPAL — IDÊNTICO */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-blue-100 p-4 rounded-xl text-center shadow">
+            <p className="text-sm text-gray-600">Comissões Hoje</p>
+            <h2 className="text-2xl font-bold text-blue-700">
+              {stats.commissionsToday.toFixed(2)}
+            </h2>
+          </div>
 
-          <input
-            value={inviteCode}
-            readOnly
-            className="w-full bg-gray-100 px-3 py-2 rounded-lg text-center font-semibold"
-          />
+          <div className="bg-blue-100 p-4 rounded-xl text-center shadow">
+            <p className="text-sm text-gray-600">Comissões Ontem</p>
+            <h2 className="text-2xl font-bold text-blue-700">
+              {stats.commissionsYesterday.toFixed(2)}
+            </h2>
+          </div>
 
-          <p className="text-gray-600 text-sm mt-4 mb-1">Link de convite:</p>
+          <div className="bg-white p-4 rounded-xl text-center shadow">
+            <p className="text-sm text-gray-600">Total de Comissões</p>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {stats.commissionsTotal.toFixed(2)}
+            </h2>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl text-center shadow">
+            <p className="text-sm text-gray-600">Total de Membros</p>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {stats.teamMembersTotal}
+            </h2>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl text-center shadow">
+            <p className="text-sm text-gray-600">Depósitos da Equipe</p>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {stats.teamDeposits.toFixed(2)}
+            </h2>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl text-center shadow">
+            <p className="text-sm text-gray-600">Saques da Equipe</p>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {stats.teamWithdrawals.toFixed(2)}
+            </h2>
+          </div>
+        </div>
+
+        {/* LINK DE REFERÊNCIA — IDÊNTICO */}
+        <div className="bg-white border shadow-sm rounded-xl p-5 mb-6">
+          <p className="text-gray-600 text-sm mb-2">Link de Referência:</p>
 
           <div className="flex items-center gap-2">
             <input
@@ -90,12 +163,70 @@ export default function Equipa() {
           )}
         </div>
 
-        {/* TOTAL DE PESSOAS */}
-        <div className="bg-white shadow rounded-xl p-5">
-          <p className="text-gray-600 text-sm mb-1">Total de convidados:</p>
-          <h2 className="text-3xl font-bold">{total}</h2>
-        </div>
+        {/* LISTA DE NÍVEIS — IDÊNTICA */}
+        <div className="bg-white border shadow-sm rounded-xl p-5">
+          <h3 className="text-lg font-semibold mb-4">Tamanho da Equipa</h3>
 
+          {/* NIVEL 1 */}
+          <div className="mb-5">
+            <h4 className="font-bold text-gray-700 mb-2">Agente Nível 1</h4>
+
+            {stats.level1.length === 0 ? (
+              <p className="text-gray-500 text-sm">0 Pessoas</p>
+            ) : (
+              stats.level1.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 border rounded-lg mb-2"
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                    style={{ backgroundColor: getAvatarColor(m.id) }}
+                  >
+                    {m.phone.slice(-2)}
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold">{m.phone}</p>
+                    <p className="text-xs text-gray-500">
+                      Desde {new Date(m.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* NIVEL 2 */}
+          <div>
+            <h4 className="font-bold text-gray-700 mb-2">Agente Nível 2</h4>
+
+            {stats.level2.length === 0 ? (
+              <p className="text-gray-500 text-sm">0 Pessoas</p>
+            ) : (
+              stats.level2.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 border rounded-lg mb-2"
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                    style={{ backgroundColor: getAvatarColor(m.id) }}
+                  >
+                    {m.phone.slice(-2)}
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold">{m.phone}</p>
+                    <p className="text-xs text-gray-500">
+                      Desde {new Date(m.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
