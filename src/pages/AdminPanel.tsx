@@ -1,60 +1,85 @@
 // src/pages/AdminPanel.tsx
 import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { apiGet } from "../services/api";
 
 export default function AdminPanel() {
-  const [stats, setStats] = useState<any>(null);
-  const [transacoes, setTransacoes] = useState<any[]>([]);
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const s = await apiGet("/api/admin/stats");
-        const t = await apiGet("/api/admin/transacoes");
-        setStats(s || {});
-        setTransacoes(t || []);
+        // Validação REAL no backend
+        // Rota correta:
+        // GET /auth/me  -> retorna { id, phone, inviteCode, role }
+        const me = await apiGet("/auth/me");
+
+        if (me?.role === "admin") {
+          localStorage.setItem("isAdmin", "true");
+          setAllowed(true);
+        } else {
+          localStorage.removeItem("isAdmin");
+          setAllowed(false);
+        }
       } catch (err) {
-        console.error("Admin:", err);
+        console.error("Erro ao validar admin:", err);
+        setAllowed(false);
+      } finally {
+        setChecking(false);
       }
     })();
   }, []);
 
-  if (!stats) return <div className="p-6">Carregando painel...</div>;
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Verificando acesso...
+      </div>
+    );
+  }
+
+  if (!allowed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600 text-center px-6">
+        Acesso negado.  
+        <br />
+        Conta não possui privilégios administrativos.
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Admin Panel</h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 shadow rounded">
-          <div className="text-gray-500 text-sm">Usuários</div>
-          <div className="text-xl font-bold">{stats.totalUsers}</div>
-        </div>
-        <div className="bg-white p-4 shadow rounded">
-          <div className="text-gray-500 text-sm">Investimentos</div>
-          <div className="text-xl font-bold">{stats.totalInvestments}</div>
-        </div>
-        <div className="bg-white p-4 shadow rounded">
-          <div className="text-gray-500 text-sm">Depósitos</div>
-          <div className="text-xl font-bold">{stats.totalDeposits}</div>
-        </div>
-        <div className="bg-white p-4 shadow rounded">
-          <div className="text-gray-500 text-sm">Levantamentos</div>
-          <div className="text-xl font-bold">{stats.totalWithdraws}</div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-slate-50 p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">
+        Painel Administrativo
+      </h1>
 
-      <h2 className="text-xl font-bold mt-6 mb-3">Transações Recentes</h2>
+      <div className="space-y-4">
+        <Link
+          to="/admin/dashboard"
+          className="block bg-white shadow border border-slate-200 rounded-xl p-4 font-semibold text-gray-700 hover:bg-slate-100 transition"
+        >
+          Dashboard Geral
+        </Link>
 
-      <div className="space-y-3">
-        {transacoes.map(t => (
-          <div key={t.id} className="bg-white p-4 rounded shadow flex justify-between">
-            <div>
-              <div className="font-semibold">{t.tipo}</div>
-              <div className="text-sm text-gray-500">{new Date(t.createdAt).toLocaleString()}</div>
-            </div>
-            <div className="font-semibold">{Number(t.valor).toLocaleString()} KZ</div>
-          </div>
-        ))}
+        <Link
+          to="/admin/transacoes"
+          className="block bg-white shadow border border-slate-200 rounded-xl p-4 font-semibold text-gray-700 hover:bg-slate-100 transition"
+        >
+          Transações
+        </Link>
+
+        <button
+          onClick={() => {
+            localStorage.clear();
+            navigate("/login");
+          }}
+          className="w-full bg-red-600 text-white py-3 rounded-xl shadow font-semibold hover:bg-red-700 transition"
+        >
+          Sair do Admin
+        </button>
       </div>
     </div>
   );

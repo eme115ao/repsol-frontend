@@ -1,60 +1,95 @@
 // src/pages/Regras.tsx
 import React from "react";
-import { Link } from "react-router-dom";
 
 export default function Regras() {
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-8">
+    <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">Regras e Informações</h1>
 
-      <h1 className="text-3xl font-bold text-yellow-400 mb-6">
-        Regras da Plataforma Repsol
-      </h1>
+      {/* SOBRE A REPSOL */}
+      <section className="bg-white rounded-2xl shadow p-6 mb-6 border border-slate-100">
+        <h2 className="text-lg font-semibold mb-2 text-gray-800">
+          Sobre a Repsol Angola
+        </h2>
 
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-2xl text-justify space-y-4">
-
-        <p>
-          🔸 A Repsol é uma plataforma de investimento segura e automatizada que
-          oferece rendimento diário com base nos produtos selecionados.
+        <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+          A Repsol é uma empresa multinacional de energia e petroquímica fundada
+          em 1987, com sede em Madrid. Opera nos setores de exploração,
+          produção, petroquímica e distribuição de energia.
+          <br /><br />
+          A empresa atua em diversos continentes e é reconhecida por sua
+          inovação, segurança e compromisso com o desenvolvimento sustentável.
+          Em Angola, a Repsol opera através da Repsol Angola 22 B.V.,
+          desempenhando atividades relevantes no setor energético.
         </p>
 
-        <p>
-          🔸 Cada usuário deve utilizar apenas uma conta.  
-          Contas duplicadas serão permanentemente bloqueadas.
+        <h2 className="text-lg font-semibold mb-2 text-gray-800">Missão e Valores</h2>
+        <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+          Missão: Proporcionar soluções seguras, acessíveis e eficientes,
+          promovendo crescimento financeiro sustentável para os clientes.
         </p>
 
-        <p>
-          🔸 Os rendimentos são calculados automaticamente todos os dias e podem
-          ser retirados após atingir o valor mínimo de saque.
-        </p>
+        <ul className="list-disc list-inside text-sm text-gray-600 mb-3 space-y-1">
+          <li>Transparência e responsabilidade</li>
+          <li>Compromisso com segurança e eficiência</li>
+          <li>Foco no cliente e no parceiro</li>
+          <li>Inovação contínua e melhoria dos serviços</li>
+        </ul>
+      </section>
 
-        <p>
-          🔸 O saldo deve ser mantido na conta para gerar rendimento contínuo,
-          conforme o plano ativo.
-        </p>
+      {/* REGRAS DA PLATAFORMA */}
+      <section className="bg-white rounded-2xl shadow p-6 border border-slate-100">
+        <h2 className="text-lg font-semibold mb-3 text-gray-800">
+          Regras de Uso da Plataforma
+        </h2>
 
-        <p>
-          🔸 Saques e depósitos são processados manualmente por administradores
-          para garantir segurança e rastreabilidade.
-        </p>
+        <ol className="list-decimal list-inside text-sm text-gray-600 space-y-3 leading-relaxed">
+          <li>
+            <strong>Cadastro:</strong> Informar número de telefone válido e criar
+            uma senha forte para proteger a conta.
+          </li>
 
-        <p>
-          🔸 A plataforma reserva-se o direito de encerrar contas suspeitas de
-          fraude, sem aviso prévio.
-        </p>
+          <li>
+            <strong>Investimentos:</strong> Cada produto tem valor mínimo,
+            rendimento diário e prazo definidos. Os rendimentos são
+            atualizados automaticamente.
+          </li>
 
-        <p className="text-yellow-400 font-semibold text-center mt-6">
-          ⚡ Invista com responsabilidade e acompanhe seus ganhos no Dashboard.
-        </p>
+          <li>
+            <strong>Referências:</strong> O usuário recebe um código exclusivo
+            para convidar outros membros. Indicações falsas ou múltiplas contas
+            não são permitidas.
+          </li>
 
-      </div>
+          <li>
+            <strong>Depósitos & Saques:</strong> Depósitos devem ser realizados
+            apenas nas contas oficiais da plataforma. Saques só são permitidos
+            para contas bancárias cadastradas pelo próprio usuário.
+          </li>
 
-      <Link
-        to="/dashboard"
-        className="mt-8 bg-yellow-500 text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-yellow-400 transition"
-      >
-        Voltar ao Dashboard
-      </Link>
+          <li>
+            <strong>Histórico:</strong> Todas as operações ficam registradas e
+            podem ser consultadas na área “Histórico”.
+          </li>
 
+          <li>
+            <strong>Conduta:</strong> É proibido tentar manipular o sistema,
+            criar contas falsas, burlar indicações ou simular transações. A
+            conta pode ser bloqueada permanentemente.
+          </li>
+
+          <li>
+            <strong>Suporte:</strong> Todos os atendimentos devem ser realizados
+            exclusivamente pelos canais oficiais da plataforma.
+          </li>
+
+          <li>
+            <strong>Alterações:</strong> A plataforma pode atualizar regras,
+            valores ou produtos conforme necessário. Os usuários serão
+            notificados quando houver mudanças importantes.
+          </li>
+        </ol>
+      </section>
     </div>
   );
 }

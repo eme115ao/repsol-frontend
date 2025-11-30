@@ -1,226 +1,164 @@
 // src/pages/Dashboard.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
+import { Link } from "react-router-dom";
 
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
-} from "recharts";
-
-type ProdutoUser = {
+interface Investimento {
   id: number;
-  userId: number;
-  productId: number;
   investido: number;
   rendimentoAcumulado: number;
   createdAt: string;
   product: {
     id: number;
     nome: string;
-    imagem?: string | null;
+    imagem: string | null;
+    valorMinimo: number;
+    rendimento: number;
+    duracaoDias: number;
   };
-};
+}
 
-type DashboardResponse = {
+interface DashboardData {
+  saldoDisponivel: number;
   totalInvestido: number;
-  totalRendimento: number;
-  produtos: ProdutoUser[];
-};
-
-const COLORS = ["#FF7A00", "#FDBA74", "#F97316", "#F59E0B", "#D97706", "#FFA94D"];
-
-function formatDate(d: string) {
-  const dt = new Date(d);
-  return dt.toLocaleDateString("pt-AO", {
-    day: "2-digit",
-    month: "2-digit"
-  });
+  rendimentoHoje: number;
+  rendimentoTotal: number;
+  investimentos: Investimento[];
 }
 
 export default function Dashboard() {
-  const userId = Number(localStorage.getItem("userId"));
-  const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await apiGet(`/dashboard/${userId}`);
-
-        setData({
-          totalInvestido: res.totalInvestido ?? 0,
-          totalRendimento: res.totalRendimento ?? 0,
-          produtos: res.products ?? res.produtos ?? []
-        });
-      } catch {
-        setData(null);
+        const res = await apiGet("/api/dashboard");
+        setData(res);
+      } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
-  }, [userId]);
+  }, []);
 
-  const series = useMemo(() => {
-    if (!data) return [];
-
-    const map: Record<string, number> = {};
-
-    data.produtos.forEach((p) => {
-      const dia = formatDate(p.createdAt);
-      map[dia] = (map[dia] || 0) + p.investido;
-    });
-
-    const arr = Object.keys(map).map((k) => ({
-      date: k,
-      value: map[k]
-    }));
-
-    arr.sort((a, b) => {
-      const [da, ma] = a.date.split("/").map(Number);
-      const [db, mb] = b.date.split("/").map(Number);
-      return ma === mb ? da - db : ma - mb;
-    });
-
-    let acumulado = 0;
-    return arr.map((e) => ({
-      date: e.date,
-      total: (acumulado += e.value)
-    }));
-  }, [data]);
-
-  const pizza = useMemo(() => {
-    if (!data) return [];
-
-    const map = new Map<string, number>();
-
-    data.produtos.forEach((p) => {
-      const nome = p.product?.nome ?? `Produto ${p.productId}`;
-      map.set(nome, (map.get(nome) || 0) + p.investido);
-    });
-
-    return Array.from(map).map(([name, value]) => ({
-      name,
-      value
-    }));
-  }, [data]);
-
-  if (loading) return <div className="p-6">Carregando...</div>;
-  if (!data) return <div className="p-6">Erro ao carregar.</div>;
+  if (loading || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Carregando...
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Dashboard</h1>
 
-      {/* CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl shadow">
-          <div className="text-gray-500 text-sm">Total Investido</div>
-          <div className="text-2xl font-bold">
-            {data.totalInvestido.toLocaleString()} KZ
+      <div className="bg-white p-6 rounded-2xl shadow border border-slate-200 mb-4">
+        <h2 className="text-sm font-semibold text-gray-600">Saldo Disponível</h2>
+        <p className="text-3xl font-bold text-orange-600 mt-1">
+          {data.saldoDisponivel.toLocaleString()} Kz
+        </p>
+
+        <div className="grid grid-cols-2 gap-4 mt-4 text-center">
+          <div className="p-3 rounded-xl bg-orange-50 border border-orange-100">
+            <p className="text-xs text-gray-600">Total Investido</p>
+            <p className="font-bold text-gray-900">
+              {data.totalInvestido.toLocaleString()} Kz
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-green-50 border border-green-100">
+            <p className="text-xs text-gray-600">Renda Hoje</p>
+            <p className="font-bold text-gray-900">
+              {data.rendimentoHoje.toLocaleString()} Kz
+            </p>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl shadow">
-          <div className="text-gray-500 text-sm">Total em Rendimentos</div>
-          <div className="text-2xl font-bold text-orange-600">
-            {data.totalRendimento.toLocaleString()} KZ
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl shadow">
-          <div className="text-gray-500 text-sm">Nº Produtos</div>
-          <div className="text-2xl font-bold">{data.produtos.length}</div>
+        <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 mt-3 text-center">
+          <p className="text-xs text-gray-600">Rendimento Total</p>
+          <p className="font-bold text-gray-900">
+            {data.rendimentoTotal.toLocaleString()} Kz
+          </p>
         </div>
       </div>
 
-      {/* GRÁFICOS */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-5 rounded-xl shadow">
-          <h2 className="font-semibold mb-3">Histórico de Investimentos</h2>
-          <div style={{ width: "100%", height: 280 }}>
-            <ResponsiveContainer>
-              <LineChart data={series}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="total"
-                  stroke="#FF7A00"
-                  strokeWidth={3}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <Link
+          to="/deposito"
+          className="bg-orange-500 text-white py-3 rounded-xl font-semibold shadow text-center"
+        >
+          Recarregar
+        </Link>
 
-        <div className="bg-white p-5 rounded-xl shadow">
-          <h2 className="font-semibold mb-3">Distribuição por Produto</h2>
-          <div style={{ width: "100%", height: 280 }}>
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={pizza}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={90}
-                  label
-                >
-                  {pizza.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <Link
+          to="/levantamento"
+          className="bg-blue-600 text-white py-3 rounded-xl font-semibold shadow text-center"
+        >
+          Retirar
+        </Link>
       </div>
 
-      {/* LISTAGEM */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Seus Investimentos</h2>
+      <Link
+        to="/convidar"
+        className="block bg-gradient-to-r from-orange-500 to-orange-600 text-white p-5 rounded-2xl shadow mb-6"
+      >
+        <p className="text-sm font-semibold">Convide amigos e ganhe comissões</p>
+        <p className="text-xs opacity-80 mt-1">
+          Seu link exclusivo está disponível na página Convidar.
+        </p>
+      </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {data.produtos.map((p) => (
+      <h2 className="text-lg font-bold text-gray-800 mb-2">Meus Produtos</h2>
+
+      {data.investimentos.length === 0 ? (
+        <p className="text-sm text-gray-600">
+          Você ainda não comprou nenhum produto.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {data.investimentos.map((inv) => (
             <div
-              key={p.id}
-              className="bg-white p-5 rounded-xl shadow flex items-center gap-4"
+              key={inv.id}
+              className="bg-white p-4 rounded-2xl border border-slate-200 shadow flex gap-4 items-center"
             >
-              <img
-                src={`/assets/${p.product?.imagem ?? "placeholder.png"}`}
-                className="w-20 h-14 rounded object-cover"
-                onError={(e: any) =>
-                  (e.currentTarget.src = "/assets/placeholder.png")
-                }
-              />
-
-              <div className="flex-1">
-                <div className="font-semibold">{p.product?.nome}</div>
-                <div className="text-sm text-gray-500">
-                  Investido: {p.investido.toLocaleString()} KZ
-                </div>
+              <div className="w-16 h-16 rounded-xl bg-orange-100 overflow-hidden border border-orange-200">
+                {inv.product.imagem ? (
+                  <img
+                    src={`/assets/${inv.product.imagem}`}
+                    alt={inv.product.nome}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-orange-600 font-bold">
+                    {inv.product.nome[0]}
+                  </div>
+                )}
               </div>
 
-              <div className="text-right">
-                <div className="text-sm text-gray-500">Rendimento</div>
-                <div className="font-bold text-orange-600">
-                  {p.rendimentoAcumulado.toLocaleString()} KZ
-                </div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-800">{inv.product.nome}</p>
+
+                <p className="text-xs text-gray-600">
+                  Investido: {inv.investido.toLocaleString()} Kz
+                </p>
+
+                <p className="text-xs text-gray-600">
+                  Rend. acumulado: {inv.rendimentoAcumulado.toLocaleString()} Kz
+                </p>
+
+                <p className="text-xs text-gray-500">
+                  Desde: {new Date(inv.createdAt).toLocaleDateString()}
+                </p>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      )}
+
+      <div className="h-10" />
     </div>
   );
 }

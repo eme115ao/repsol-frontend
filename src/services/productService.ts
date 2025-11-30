@@ -1,10 +1,28 @@
 // src/services/productService.ts
-import { apiGet } from "./api";
+import { apiGet, apiPost } from "./api";
 
+/**
+ * Retorna todos os produtos ativos cadastrados no backend.
+ */
 export async function getAllProducts() {
-  return apiGet("/products");
+  return apiGet("/api/products");
 }
 
-export async function getProductById(id: number) {
-  return apiGet(`/products/${id}`);
+/**
+ * Retorna os detalhes de um único produto.
+ */
+export async function getProductById(id: number | string) {
+  return apiGet(`/api/products/${id}`);
+}
+
+/**
+ * Envia compra de produto para o backend.
+ * Backend cria registro em UserProduct e inicia contagem do rendimento.
+ */
+export async function buyProduct(userId: number, productId: number, amount: number) {
+  return apiPost("/api/investments/buy", {
+    userId,
+    productId,
+    amount,
+  });
 }

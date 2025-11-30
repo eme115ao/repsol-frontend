@@ -1,13 +1,33 @@
 // src/services/bancoService.ts
-import { apiGet, apiPut } from "./api";
+import { apiGet, apiPost } from "./api";
 
-export async function getBanco(userId: number) {
-  return apiGet(`/banco/${userId}`);
+/**
+ * Recupera bancos da empresa (usados para DEPÓSITO).
+ */
+export async function listarBancosEmpresa() {
+  return apiGet("/api/bancos/empresa");
 }
 
-export async function updateBanco(
+/**
+ * Lista bancos cadastrados pelo usuário (para SAQUES).
+ */
+export async function listarBancosUsuario(userId: number) {
+  return apiGet(`/api/bancos/usuario/${userId}`);
+}
+
+/**
+ * Registra novo banco do usuário para saques.
+ */
+export async function cadastrarBancoUsuario(
   userId: number,
-  data: { nome: string; titular: string; conta: string; endereco?: string }
+  banco: string,
+  titular: string,
+  conta: string
 ) {
-  return apiPut(`/banco/${userId}`, data);
+  return apiPost("/api/bancos/usuario", {
+    userId,
+    banco,
+    titular,
+    conta,
+  });
 }

@@ -1,53 +1,77 @@
 // src/pages/Convidar.tsx
-import { useEffect, useState } from "react";
-import { getReferrals, buildInviteLink } from "../services/referralService";
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../services/api";
 
 export default function Convidar() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = user?.id;
-  const inviteCode = user?.inviteCode || null;
-
-  const [lista, setLista] = useState<any[]>([]);
+  const [codigo, setCodigo] = useState<string>("...");
+  const [total, setTotal] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
+    (async () => {
       try {
-        const res = await getReferrals(userId);
-        setLista(res);
-      } catch (err: any) {
-        console.error(err);
+        const codigoRes = await apiGet("/api/referral/my-code");
+        setCodigo(codigoRes.code || "N/A");
+
+        const totalRes = await apiGet("/api/referral/invite-count");
+        setTotal(totalRes.total || 0);
+      } catch (err) {
+        console.error("Erro ao carregar dados do convite:", err);
+      } finally {
+        setLoading(false);
       }
-    }
-    load();
+    })();
   }, []);
 
-  const link = buildInviteLink(userId, inviteCode);
+  function copiarCodigo() {
+    navigator.clipboard.writeText(codigo);
+    alert("Código copiado!");
+  }
+
+  function copiarLink() {
+    const link = `https://repsolinvest.netlify.app/#/register?ref=${codigo}`;
+    navigator.clipboard.writeText(link);
+    alert("Link de convite copiado!");
+  }
+
+  if (loading) {
+    return <p className="text-center py-10">Carregando…</p>;
+  }
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-3">Convidar</h1>
+    <div className="px-4 py-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-center">Sistema de Convite</h1>
 
-      <p className="mb-3">Seu link de convite:</p>
+      <div className="bg-white shadow rounded-xl p-4 mb-6">
+        <p className="font-semibold mb-2">Seu código:</p>
 
-      <div className="bg-gray-100 p-3 rounded break-all mb-4">
-        {link}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={codigo}
+            disabled
+            className="flex-1 bg-gray-100 rounded-lg p-2 text-center"
+          />
+          <button
+            onClick={copiarCodigo}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+          >
+            Copiar
+          </button>
+        </div>
+
+        <button
+          onClick={copiarLink}
+          className="mt-4 w-full bg-green-600 text-white py-3 rounded-lg font-semibold"
+        >
+          Copiar link de convite
+        </button>
       </div>
 
-      <h2 className="text-xl font-semibold mb-2">Seus convidados</h2>
-
-      {lista.length === 0 && <p>Nenhum convidado ainda.</p>}
-
-      {lista.length > 0 && (
-        <ul className="space-y-2">
-          {lista.map((i) => (
-            <li key={i.id} className="p-3 bg-white shadow rounded">
-              <p>ID: {i.referredUser?.id}</p>
-              <p>Telefone: {i.referredUser?.phone}</p>
-              <p>Data: {new Date(i.referredUser?.createdAt).toLocaleDateString()}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="bg-white shadow rounded-xl p-4">
+        <p className="font-semibold mb-2">Total de convidados:</p>
+        <p className="text-3xl font-bold">{total}</p>
+      </div>
     </div>
   );
 }

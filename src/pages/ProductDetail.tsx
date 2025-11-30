@@ -1,74 +1,140 @@
 // src/pages/ProductDetail.tsx
 import React, { useEffect, useState } from "react";
-import { apiGet, apiPost } from "../services/api";
 import { useParams, useNavigate } from "react-router-dom";
+import { apiGet, apiPost } from "../services/api";
+
+interface Product {
+  id: number;
+  nome: string;
+  valorMinimo: number;
+  rendimento: number;
+  duracaoDias: number;
+  imagem: string | null;
+}
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState<any>(null);
-  const [valor, setValor] = useState(0);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const res = await apiGet(`/api/products/${id}`);
-      setProduct(res);
+      try {
+        // ROTA CORRETA DO BACKEND
+        // GET /api/products/:id
+        const res = await apiGet<any>(`/api/products/${id}`);
+
+        // aceita tanto { product: {...} } quanto o objeto direto
+        setProduct(res.product || res);
+      } catch (err) {
+        console.error("Erro ao carregar produto:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [id]);
 
-  async function investir() {
-    if (!valor || valor < product.valorMinimo) {
-      alert(`Valor mínimo é ${product.valorMinimo.toLocaleString()} KZ`);
-      return;
+  function resolveImage(img?: string | null) {
+    if (!img) return "/assets/placeholder.png";
+    if (!img.startsWith("/assets/")) {
+      return `/assets/${img}`;
     }
-
-    const res = await apiPost("/api/invest", {
-      productId: product.id,
-      valor,
-    });
-
-    if (res.error) {
-      alert(res.error);
-      return;
-    }
-
-    alert("Investimento realizado com sucesso!");
-    navigate("/dashboard");
+    return img;
   }
 
-  if (!product) return <div className="p-4">Carregando...</div>;
+  async function handleBuy() {
+    if (!product) return;
+
+    setProcessing(true);
+
+    try {
+      // ROTA CORRETA DO BACKEND:
+      // POST /api/investment
+      // body: { productId, amount }
+      const body = {
+        productId: product.id,
+        amount: product.valorMinimo,
+      };
+
+      await apiPost("/api/investment", body);
+
+      alert("Compra realizada com sucesso!");
+      navigate("/loja");
+    } catch (err: any) {
+      console.error("Erro ao comprar produto:", err);
+
+      const msg = err?.message || "";
+
+      if (msg.includes("Saldo insuficiente")) {
+        alert("Saldo insuficiente! Faça um depósito para continuar.");
+        navigate("/deposito");
+        return;
+      }
+
+      alert(msg || "Erro ao processar compra.");
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Carregando produto...
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        Produto não encontrado.
+      </div>
+    );
+  }
+
+  const rendimentoReal = Math.round(
+    product.valorMinimo * (product.rendimento / 100)
+  );
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">{product.nome}</h1>
 
-      <img
-        src={`/assets/${product.imagem}`}
-        className="w-full h-52 object-cover rounded-xl mb-4"
-      />
-
-      <h1 className="text-2xl font-bold mb-2">{product.nome}</h1>
-
-      <div className="bg-white rounded-xl shadow p-4 space-y-2 mb-6">
-        <p><strong>Mínimo:</strong> {product.valorMinimo.toLocaleString()} KZ</p>
-        <p><strong>Duração:</strong> {product.duracaoDias} dias</p>
-        <p><strong>Rendimento:</strong> {(product.rendimento * 100).toFixed(2)}% ao dia</p>
+      <div className="w-full h-48 rounded-2xl bg-white shadow border border-slate-200 mb-4 overflow-hidden">
+        <img
+          src={resolveImage(product.imagem)}
+          alt={product.nome}
+          className="w-full h-full object-contain p-4"
+        />
       </div>
 
-      <input
-        type="number"
-        className="border p-3 rounded w-full mb-4"
-        placeholder="Valor a investir"
-        onChange={(e) => setValor(Number(e.target.value))}
-      />
+      <div className="bg-white rounded-2xl shadow p-6 border border-slate-100 space-y-3">
+        <p className="text-gray-700">
+          Preço mínimo:{" "}
+          <strong>{product.valorMinimo.toLocaleString()} Kz</strong>
+        </p>
+
+        <p className="text-gray-700">
+          Rendimento diário real:{" "}
+          <strong>{rendimentoReal.toLocaleString()} Kz</strong>
+        </p>
+
+        <p className="text-gray-700">
+          Duração: <strong>{product.duracaoDias} dias</strong>
+        </p>
+      </div>
 
       <button
-        onClick={investir}
-        className="bg-orange-600 text-white w-full py-3 rounded-xl font-bold"
+        onClick={handleBuy}
+        disabled={processing}
+        className="mt-6 w-full bg-orange-500 text-white font-semibold py-3 rounded-xl shadow hover:bg-orange-600 transition disabled:bg-gray-400"
       >
-        Investir Agora
+        {processing ? "Processando..." : "Comprar agora"}
       </button>
-
     </div>
   );
 }

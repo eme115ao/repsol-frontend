@@ -3,15 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import { registerServiceWorker } from "./registerServiceWorker";
 
-const root = document.getElementById("root") as HTMLElement;
-
-ReactDOM.createRoot(root).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <App />
 );
-
-// Registrar o Service Worker para PWA
-registerServiceWorker();

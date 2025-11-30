@@ -1,34 +1,24 @@
 // src/services/referralService.ts
-import { apiGet } from "../services/api";
+import { apiGet } from "./api";
 
-export type ReferralItem = {
-  id: number;
-  referredUser?: {
-    id: number;
-    phone: string | null;
-    createdAt: string;
-  } | null;
-};
-
-const BASE = "/referral";
-
-export async function getReferrals(userId: number | string): Promise<ReferralItem[]> {
-  return apiGet<ReferralItem[]>(`${BASE}/${userId}`);
+/**
+ * Lista usuários que foram indicados pelo usuário atual.
+ */
+export async function listarIndicados(userId: number) {
+  return apiGet(`/api/referral/my/${userId}`);
 }
 
 /**
- * Gera link de convite real baseado no .env
+ * Gera link de convite profissional
  * Exemplo final:
- * https://repsol-ag.netlify.app/register?ref=12345
+ * https://meusite.com/register?ref=ABC123
  */
-export function buildInviteLink(userId: number | string, inviteCode?: string) {
+export function gerarLinkConvite(inviteCode: string | null) {
   const base =
-    (import.meta.env.VITE_APP_URL as string) ||
+    import.meta.env.VITE_APP_URL?.trim() ||
     window.location.origin;
 
-  if (inviteCode) {
-    return `${base}/register?ref=${encodeURIComponent(inviteCode)}`;
-  }
+  const code = encodeURIComponent(inviteCode || "");
 
-  return `${base}/register?ref=${encodeURIComponent(String(userId))}`;
+  return `${base}/register?ref=${code}`;
 }

@@ -1,46 +1,35 @@
-// src/components/WhatsAppButton.tsx
-import React, { useState } from "react";
+// src/components/WhatsAppButtons.tsx
+import React from "react";
+import { FaWhatsapp } from "react-icons/fa";
 
-type Props = {
-  managerPhone: string; // e.g. +244975658117
-  groupLink: string;
-};
-
-export default function WhatsAppButton({ managerPhone, groupLink }: Props) {
-  const [open, setOpen] = useState(false);
-
+export default function WhatsAppButtons() {
   return (
-    <div style={{ position: "fixed", right: 20, bottom: 20, zIndex: 60 }}>
-      <div className="flex flex-col items-end gap-2">
-        {open && (
-          <div className="flex flex-col gap-2 mb-2">
-            <a
-              href={`https://wa.me/${managerPhone.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noreferrer"
-              className="px-4 py-2 bg-white border rounded shadow text-sm"
-            >
-              Falar com Gerente
-            </a>
-            <a
-              href={groupLink}
-              target="_blank"
-              rel="noreferrer"
-              className="px-4 py-2 bg-white border rounded shadow text-sm"
-            >
-              Entrar no Grupo
-            </a>
-          </div>
-        )}
+    <div className="space-y-3">
 
-        <button
-          onClick={() => setOpen((s) => !s)}
-          aria-label="WhatsApp"
-          className="p-3 rounded-full bg-green-500 shadow-lg text-white"
-        >
-          {open ? "✕" : "💬"}
-        </button>
-      </div>
+      {/* Falar com o gerente */}
+      <a
+        href="https://wa.me/244975658117"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Falar com o gerente via WhatsApp"
+        className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl shadow font-semibold hover:bg-green-700 transition"
+      >
+        <FaWhatsapp size={20} />
+        Falar com o gerente
+      </a>
+
+      {/* Grupo oficial */}
+      <a
+        href="https://chat.whatsapp.com/Dg1G3Kdinhq7zvE1MZSKcx"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Aderir ao grupo oficial do WhatsApp"
+        className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-xl shadow font-semibold hover:bg-green-600 transition"
+      >
+        <FaWhatsapp size={20} />
+        Aderir ao grupo
+      </a>
+
     </div>
   );
 }

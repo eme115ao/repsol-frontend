@@ -1,24 +1,247 @@
 // src/pages/Minha.tsx
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../services/api";
+import { Link, useNavigate } from "react-router-dom";
+
+// ÍCONES
+import { FiBox, FiCreditCard, FiBarChart2, FiUsers } from "react-icons/fi";
+
+interface Investimento {
+  id: number;
+  investido: number;
+  rendimentoAcumulado: number;
+  createdAt: string;
+  product: {
+    id: number;
+    nome: string;
+    imagem: string | null;
+    valorMinimo: number;
+    rendimento: number;
+    duracaoDias: number;
+  };
+}
+
+interface DashboardData {
+  saldoDisponivel: number;
+  totalInvestido: number;
+  rendimentoHoje: number;
+  rendimentoTotal: number;
+  investimentos: Investimento[];
+}
 
 export default function Minha() {
-  const phone = localStorage.getItem("phone") || "Usuário";
+  const navigate = useNavigate();
+
+  const userId = Number(localStorage.getItem("userId"));
+  const phone = localStorage.getItem("phone");
+  const inviteCode = localStorage.getItem("inviteCode");
+
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await apiGet<DashboardData>("/api/dashboard");
+        setData(res);
+      } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [navigate]);
+
+  if (loading || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Carregando...
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Minha Conta</h1>
-      <div className="bg-white p-6 rounded shadow max-w-md space-y-3">
-        <div className="font-semibold text-lg">{phone}</div>
+    <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
 
-        <Link to="/perfil" className="block text-orange-600">Perfil</Link>
-        <Link to="/meubanco" className="block text-orange-600">Meu Banco</Link>
-        <Link to="/historico" className="block text-orange-600">Histórico</Link>
-        <Link to="/equipas" className="block text-orange-600">Equipa</Link>
-        <Link to="/convidar" className="block text-orange-600">Convidar Amigos</Link>
+      {/* CABEÇALHO PERFIL */}
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Minha Conta</h1>
 
-        <button onClick={() => { localStorage.clear(); window.location.href = "/login"; }} className="mt-4 text-red-600">Sair</button>
+      <div className="bg-white rounded-2xl shadow p-5 border border-slate-200 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-2xl font-bold">
+            {phone?.[0] ?? "U"}
+          </div>
+
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-gray-900">{phone}</h2>
+            <p className="text-sm text-gray-500">ID: {userId}</p>
+            <p className="text-sm text-gray-500">
+              Código convite:{" "}
+              <strong className="text-orange-600">{inviteCode}</strong>
+            </p>
+          </div>
+        </div>
       </div>
+
+      {/* CARDS PRINCIPAIS */}
+      <div className="bg-white p-6 rounded-2xl shadow border border-slate-200 mb-4">
+        <h2 className="text-sm font-semibold text-gray-600">
+          Saldo Disponível
+        </h2>
+        <p className="text-3xl font-bold text-orange-600 mt-1">
+          {data.saldoDisponivel.toLocaleString()} Kz
+        </p>
+
+        <div className="grid grid-cols-2 gap-4 mt-4 text-center">
+          <div className="p-3 rounded-xl bg-orange-50 border border-orange-100">
+            <p className="text-xs text-gray-600">Total Investido</p>
+            <p className="font-bold text-gray-900">
+              {data.totalInvestido.toLocaleString()} Kz
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-green-50 border border-green-100">
+            <p className="text-xs text-gray-600">Renda Hoje</p>
+            <p className="font-bold text-gray-900">
+              {data.rendimentoHoje.toLocaleString()} Kz
+            </p>
+          </div>
+        </div>
+
+        <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 mt-3 text-center">
+          <p className="text-xs text-gray-600">Rendimento Total</p>
+          <p className="font-bold text-gray-900">
+            {data.rendimentoTotal.toLocaleString()} Kz
+          </p>
+        </div>
+      </div>
+
+      {/* BOTÕES DE AÇÃO */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <Link
+          to="/deposito"
+          className="bg-orange-500 text-white py-3 rounded-xl font-semibold shadow text-center"
+        >
+          Recarregar
+        </Link>
+
+        <Link
+          to="/levantamento"
+          className="bg-blue-600 text-white py-3 rounded-xl font-semibold shadow text-center"
+        >
+          Retirar
+        </Link>
+      </div>
+
+      {/* CONVITE */}
+      <Link
+        to="/convidar"
+        className="block bg-gradient-to-r from-orange-500 to-orange-600 text-white p-5 rounded-2xl shadow mb-6"
+      >
+        <p className="text-sm font-semibold">Convide amigos e ganhe comissões</p>
+        <p className="text-xs opacity-80 mt-1">
+          Seu link exclusivo está disponível na página Convidar.
+        </p>
+      </Link>
+
+      {/* MEUS PRODUTOS */}
+      <h2 className="text-lg font-bold text-gray-800 mb-2">Meus Produtos</h2>
+
+      {data.investimentos.length === 0 ? (
+        <p className="text-sm text-gray-600">
+          Você ainda não comprou nenhum produto.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {data.investimentos.map((inv) => (
+            <div
+              key={inv.id}
+              className="bg-white p-4 rounded-2xl border border-slate-200 shadow flex gap-4 items-center"
+            >
+              <div className="w-16 h-16 rounded-xl bg-orange-100 overflow-hidden border border-orange-200">
+                {inv.product.imagem ? (
+                  <img
+                    src={`/assets/${inv.product.imagem}`}
+                    alt={inv.product.nome}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-orange-600 font-bold">
+                    {inv.product.nome[0]}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1">
+                <p className="font-bold text-gray-800">{inv.product.nome}</p>
+
+                <p className="text-xs text-gray-600">
+                  Investido: {inv.investido.toLocaleString()} Kz
+                </p>
+
+                <p className="text-xs text-gray-600">
+                  Rend. acumulado: {inv.rendimentoAcumulado.toLocaleString()} Kz
+                </p>
+
+                <p className="text-xs text-gray-500">
+                  Desde: {new Date(inv.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* MENU EXTRA (CORRIGIDO COM ÍCONES) */}
+      <div className="space-y-3 mt-6">
+        <MenuItem title="Loja (Meus Produtos)" link="/loja" icon={<FiBox size={24} className="text-orange-600" />} />
+        <MenuItem title="Meu Banco" link="/meubanco" icon={<FiCreditCard size={24} className="text-blue-600" />} />
+        <MenuItem title="Histórico" link="/historico" icon={<FiBarChart2 size={24} className="text-green-600" />} />
+        <MenuItem title="Convidar Amigos" link="/convidar" icon={<FiUsers size={24} className="text-purple-600" />} />
+      </div>
+
+      {/* SAIR */}
+      <button
+        onClick={() => {
+          localStorage.clear();
+          navigate("/login");
+        }}
+        className="mt-6 w-full bg-red-500 text-white py-3 rounded-xl font-semibold shadow hover:bg-red-600"
+      >
+        Sair
+      </button>
+
+      <div className="h-10" />
     </div>
+  );
+}
+
+function MenuItem({
+  title,
+  link,
+  icon,
+}: {
+  title: string;
+  link: string;
+  icon: JSX.Element;
+}) {
+  return (
+    <Link
+      to={link}
+      className="flex items-center gap-4 bg-white p-4 rounded-xl shadow border border-slate-100 hover:bg-slate-100"
+    >
+      <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-gray-800">{title}</p>
+      </div>
+    </Link>
   );
 }

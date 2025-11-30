@@ -1,10 +1,24 @@
-// src/services/investmentService.ts
-import { apiPost, apiGet } from "./api";
+// src/services/investimentoService.ts
+import { apiGet, apiPost } from "./api";
 
-export async function getUserInvestments(userId: number) {
-  return apiGet(`/products/user/${userId}`);
+/**
+ * Compra um produto de investimento.
+ */
+export async function comprarProduto(
+  userId: number,
+  productId: number,
+  valor: number
+) {
+  return apiPost("/api/investments/comprar", {
+    userId,
+    productId,
+    valor,
+  });
 }
 
-export async function invest(userId: number, productId: number, amount: number) {
-  return apiPost("/products/invest", { userId, productId, amount });
+/**
+ * Lista os investimentos do usuário.
+ */
+export async function listarMeusInvestimentos(userId: number) {
+  return apiGet(`/api/investments/meus/${userId}`);
 }

@@ -1,109 +1,54 @@
 // src/services/api.ts
-// Helpers simples para chamadas ao backend usando fetch.
-// Usa VITE_API_URL (definido no .env)
+import axios from "axios";
 
-const BASE = import.meta.env.VITE_API_URL as string;
+const API_URL = import.meta.env.VITE_API_URL;
 
-type HeadersInput = Record<string, string> | undefined;
+export const api = axios.create({
+  baseURL: API_URL,
+});
 
-function buildHeaders(headers?: HeadersInput) {
-  const token = localStorage.getItem("token");
-
-  const h: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(headers || {})
-  };
-
-  if (token) h["Authorization"] = `Bearer ${token}`;
-
-  return h;
-}
-
-export async function apiGet<T = any>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method: "GET",
-    headers: buildHeaders()
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`GET ${path} failed: ${res.status} — ${text}`);
+function extractError(err: any) {
+  if (err?.response?.data?.error) {
+    return err.response.data.error;
   }
 
-  return await res.json();
-}
-
-export async function apiPost<T = any>(
-  path: string,
-  body?: any,
-  headers?: HeadersInput
-): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method: "POST",
-    headers: buildHeaders(headers),
-    body: body ? JSON.stringify(body) : undefined
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`POST ${path} failed: ${res.status} — ${text}`);
+  if (typeof err?.response?.data === "string") {
+    return err.response.data;
   }
 
-  return await res.json();
+  return "Erro inesperado na requisição";
 }
 
-export async function apiPut<T = any>(
-  path: string,
-  body?: any
-): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method: "PUT",
-    headers: buildHeaders(),
-    body: body ? JSON.stringify(body) : undefined
-  });
+export async function apiGet<T = any>(url: string): Promise<T> {
+  try {
+    const token = localStorage.getItem("token");
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`PUT ${path} failed: ${res.status} — ${text}`);
+    const res = await api.get<T>(url, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+
+    return res.data;
+  } catch (err: any) {
+    console.error("Erro GET:", err?.response?.data || err);
+    throw new Error(extractError(err));
   }
-
-  return await res.json();
 }
 
-export async function apiDelete<T = any>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method: "DELETE",
-    headers: buildHeaders()
-  });
+export async function apiPost<T = any>(url: string, body?: any): Promise<T> {
+  try {
+    const token = localStorage.getItem("token");
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`DELETE ${path} failed: ${res.status} — ${text}`);
+    const res = await api.post<T>(url, body, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+
+    return res.data;
+  } catch (err: any) {
+    console.error("Erro POST:", err?.response?.data || err);
+    throw new Error(extractError(err));
   }
-
-  return await res.json();
-}
-
-/**
- * Upload de arquivos (foto de perfil)
- * NÃO usar JSON aqui.
- */
-export async function apiUpload(path: string, formData: FormData): Promise<any> {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${BASE}${path}`, {
-    method: "POST",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : ""
-      // sem Content-Type -> browser define automaticamente
-    },
-    body: formData
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`UPLOAD ${path} failed: ${res.status} — ${text}`);
-  }
-
-  return await res.json();
 }

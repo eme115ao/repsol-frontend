@@ -5,21 +5,17 @@ import { useNavigate } from "react-router-dom";
 export default function LogoutButton() {
   const navigate = useNavigate();
 
-  function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    // if you use any other persisted state clear here
+  function handleLogout() {
+    localStorage.clear();
     navigate("/login");
-    // optionally reload to reset in-memory state
-    setTimeout(() => window.location.reload(), 200);
   }
 
   return (
     <button
-      onClick={logout}
-      className="w-full bg-red-600 text-white py-2 rounded hover:opacity-95"
+      onClick={handleLogout}
+      className="mt-6 bg-red-500 text-white w-full py-3 rounded-xl shadow font-semibold hover:bg-red-600 transition"
     >
-      Logout
+      Terminar Sessão
     </button>
   );
 }
