@@ -1,7 +1,6 @@
-// src/pages/Register.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { apiPost } from "../services/api";
+import { apiPost, endpoints } from "../services/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -14,9 +13,9 @@ export default function Register() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-  const code = params.get("ref");
-  if (code) setInviteCode(code);
-}, []);
+    const code = params.get("ref");
+    if (code) setInviteCode(code);
+  }, []);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -24,20 +23,21 @@ export default function Register() {
     setError("");
 
     try {
-      const res = await apiPost("/api/auth/register", {
+      // ROTA CORRETA ✔
+      const res = await apiPost(endpoints.register, {
         phone,
         password,
         inviteCode: inviteCode || undefined,
       });
 
       localStorage.setItem("token", res.token);
-      localStorage.setItem("userId", res.user.id);
+      localStorage.setItem("userId", String(res.user.id));
       localStorage.setItem("phone", res.user.phone);
       localStorage.setItem("inviteCode", res.user.inviteCode);
 
       navigate("/home");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Erro ao criar conta");
+      setError(err.message || "Erro ao criar conta");
     } finally {
       setLoading(false);
     }
@@ -50,10 +50,16 @@ export default function Register() {
         className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md"
       >
         <div className="w-full flex justify-center mb-4">
-          <img src="/logo.png" alt="Repsol" className="w-20 h-20 rounded-full shadow" />
+          <img
+            src="/logo.png"
+            alt="Repsol"
+            className="w-20 h-20 rounded-full shadow"
+          />
         </div>
 
-        <h2 className="text-2xl font-bold text-center mb-6 text-orange-600">Criar Conta</h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-orange-600">
+          Criar Conta
+        </h2>
 
         {error && <div className="text-sm text-red-600 mb-3">{error}</div>}
 

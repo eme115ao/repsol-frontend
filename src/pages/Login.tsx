@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { apiPost } from "../services/api";
+import { apiPost, endpoints } from "../services/api";
 
 export default function Login() {
   const [phone, setPhone] = useState("");
@@ -15,8 +15,8 @@ export default function Login() {
     setErr(null);
 
     try {
-      // ROTA CORRETA DO BACKEND
-      const res = await apiPost("/api/auth/login", { phone, password });
+      // ROTA CORRETA ✔
+      const res = await apiPost(endpoints.login, { phone, password });
 
       if (!res || !res.token) {
         throw new Error("Resposta inesperada do servidor");
@@ -29,9 +29,7 @@ export default function Login() {
 
       navigate("/home");
     } catch (error: any) {
-      const backendMsg =
-        error?.response?.data?.message || error.message || "Erro ao entrar";
-      setErr(backendMsg);
+      setErr(error.message || "Erro ao entrar");
     } finally {
       setLoading(false);
     }

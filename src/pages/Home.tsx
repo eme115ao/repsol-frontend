@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 import {
@@ -11,14 +10,26 @@ import { MdOutlineSavings, MdOutlineRule } from "react-icons/md";
 import { FiChevronRight } from "react-icons/fi";
 
 export default function Home() {
+
+  // Caminho correto da imagem (igual ao Minha.tsx)
+  const logoUrl = new URL("/src/assets/logo.png", import.meta.url).href;
+
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
 
+      {/* CABEÇALHO */}
       <header className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-6 shadow">
         <div className="max-w-md mx-auto px-4 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mb-2">
-            <span className="text-2xl font-extrabold tracking-wide">R</span>
+          
+          {/* SUBSTITUIÇÃO DA LETRA R PELO LOGO */}
+          <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-2 overflow-hidden border border-orange-200">
+            <img
+              src={logoUrl}
+              alt="Repsol Logo"
+              className="w-full h-full object-contain p-1"
+            />
           </div>
+
           <h1 className="text-2xl font-extrabold">REPSOL S.A</h1>
           <p className="text-xs mt-1 text-orange-100">
             Plataforma de investimentos com rendimentos diários

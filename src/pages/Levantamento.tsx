@@ -1,4 +1,3 @@
-// src/pages/Levantamento.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet, apiPost } from "../services/api";
 import { FaMoneyBillWave } from "react-icons/fa";
@@ -16,7 +15,9 @@ export default function Levantamento() {
   const [bancos, setBancos] = useState<BancoUsuario[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [valor, setValor] = useState("");
+  const [saldo, setSaldo] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const logos: Record<string, string> = {
@@ -25,24 +26,32 @@ export default function Levantamento() {
     BIC: "/assets/banks/bic.png",
     ATLANTICO: "/assets/banks/atlantico.png",
     SOL: "/assets/banks/sol.png",
-    KEVE: "/assets/banks/keve.png"
+    KEVE: "/assets/banks/keve.png",
   };
+
+  const hoje = new Date();
+  const diaSemana = hoje.getDay();
+  const saqueBloqueado = diaSemana === 0 || diaSemana === 5 || diaSemana === 6;
 
   useEffect(() => {
     (async () => {
       try {
-        // CORREÇÃO 1: rota correta
-        const res = await apiGet<{ bancos: BancoUsuario[] }>("/api/bancos/usuario");
+        // ============================
+        // ROTAS CORRETAS DO BACKEND
+        // ============================
+        const res = await apiGet<{ bancos: BancoUsuario[] }>("/banco/usuario");
 
         if (res.bancos && Array.isArray(res.bancos)) {
           setBancos(res.bancos);
-
-          if (res.bancos.length > 0) {
-            setSelected(res.bancos[0].id); // selecionar automaticamente
-          }
+          if (res.bancos.length > 0) setSelected(res.bancos[0].id);
         }
+
+        // SALDO DO DASHBOARD
+        const saldoRes = await apiGet<{ saldoDisponivel: number }>("/dashboard");
+        setSaldo(saldoRes.saldoDisponivel || 0);
+
       } catch (err) {
-        console.error("Erro ao carregar bancos:", err);
+        console.error("Erro ao carregar dados:", err);
       }
     })();
   }, []);
@@ -52,14 +61,16 @@ export default function Levantamento() {
 
     if (!selected) return alert("Selecione um banco.");
     if (!valor || Number(valor) <= 0) return alert("Insira um valor válido.");
+    if (Number(valor) > saldo) return alert("Valor excede o saldo disponível.");
+    if (saqueBloqueado)
+      return alert("Os levantamentos só podem ser feitos de segunda a quinta-feira.");
 
     setLoading(true);
 
     try {
-      // CORREÇÃO 2: rota correta
-      await apiPost("/api/transactions/withdraw", {
+      await apiPost("/transaction/withdraw", {
         bancoId: selected,
-        amount: Number(valor)
+        amount: Number(valor),
       });
 
       navigate("/levantamento/sucesso");
@@ -72,13 +83,24 @@ export default function Levantamento() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 pt-4 px-4 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800 text-center">
+    <div className="min-h-screen bg-slate-50 pb-24 pt-5 px-4 max-w-md mx-auto">
+
+      <h1 className="text-3xl font-extrabold mb-6 text-gray-900 text-center tracking-tight">
         Levantamento
       </h1>
 
+      <div className="mb-6 bg-white shadow-lg p-5 rounded-2xl border border-slate-200 transform scale-[1.02]">
+        <p className="text-gray-600 text-sm">Saldo disponível</p>
+        <p className="text-3xl font-extrabold text-orange-600 mt-1">
+          {saldo.toLocaleString()} Kz
+        </p>
+      </div>
+
+      {/* BANCOS */}
       <div className="space-y-4">
-        <p className="text-gray-700 font-semibold">Selecione sua conta bancária:</p>
+        <p className="text-gray-800 font-semibold text-lg">
+          Selecione sua conta bancária:
+        </p>
 
         {bancos.length === 0 && (
           <p className="text-gray-500 text-sm">Nenhum banco cadastrado.</p>
@@ -88,7 +110,7 @@ export default function Levantamento() {
           <div
             key={b.id}
             onClick={() => setSelected(b.id)}
-            className={`p-4 rounded-xl border shadow-sm cursor-pointer transition flex items-center gap-4
+            className={`p-4 rounded-2xl border shadow-sm cursor-pointer transition-all duration-200 flex items-center gap-4 hover:scale-[1.02]
               ${
                 selected === b.id
                   ? "border-orange-500 bg-orange-50 shadow-md"
@@ -104,7 +126,7 @@ export default function Levantamento() {
             </div>
 
             <div className="flex-1">
-              <p className="font-semibold text-gray-900 text-lg">{b.banco}</p>
+              <p className="font-bold text-gray-900 text-lg">{b.banco}</p>
               <p className="text-sm text-gray-600">Titular: {b.titular}</p>
               <p className="text-sm text-gray-600">{b.conta}</p>
             </div>
@@ -116,9 +138,11 @@ export default function Levantamento() {
         ))}
       </div>
 
-      <form onSubmit={enviar} className="mt-8 space-y-4">
+      {/* FORM */}
+      <form onSubmit={enviar} className="mt-8 space-y-5">
+
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Valor do Levantamento (Kz)
           </label>
           <input
@@ -126,22 +150,33 @@ export default function Levantamento() {
             value={valor}
             onChange={(e) => setValor(e.target.value)}
             placeholder="Ex: 50000"
-            className="w-full p-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-orange-400"
+            className="w-full p-3 border rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-orange-400 text-lg"
           />
         </div>
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold shadow hover:bg-orange-700 transition flex items-center justify-center gap-2 text-lg"
+          disabled={loading || saqueBloqueado}
+          className={`w-full text-white py-3 rounded-xl font-bold shadow text-lg flex items-center justify-center gap-2
+            ${
+              saqueBloqueado
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-orange-600 hover:bg-orange-700"
+            }`}
         >
-          <FaMoneyBillWave size={20} />
-          {loading ? "Enviando..." : "Solicitar Levantamento"}
+          <FaMoneyBillWave size={22} />
+          {loading ? "Processando..." : "Solicitar Levantamento"}
         </button>
 
-        <p className="text-xs text-gray-500 text-center">
-          A validação pode levar até 24 horas.
-        </p>
+        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
+          <p className="text-xs text-blue-800 leading-relaxed text-center">
+            O seu pedido de saque será processado o mais breve possível.
+            Os levantamentos são realizados apenas de segunda a quinta-feira,
+            com tempo de processamento entre 24 a 48 horas.
+            Após enviar a solicitação, aguarde com paciência enquanto a equipa
+            conclui a validação.
+          </p>
+        </div>
       </form>
     </div>
   );

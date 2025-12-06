@@ -7,7 +7,7 @@ interface Product {
   id: number;
   nome: string;
   valorMinimo: number;
-  rendimento: number;
+  rendimentoDia: number; // CORRETO
   duracaoDias: number;
   imagem: string | null;
 }
@@ -23,12 +23,15 @@ export default function ProductDetail() {
   useEffect(() => {
     (async () => {
       try {
-        // ROTA CORRETA DO BACKEND
-        // GET /api/products/:id
-        const res = await apiGet<any>(`/api/products/${id}`);
+        const res = await apiGet<any>(`/products/${id}`);
 
-        // aceita tanto { product: {...} } quanto o objeto direto
-        setProduct(res.product || res);
+        // BACKEND retorna direto o objeto, sem "product"
+        const p = res.product || res;
+
+        setProduct({
+          ...p,
+          rendimentoDia: Number(p.rendimentoDia), // garantir número
+        });
       } catch (err) {
         console.error("Erro ao carregar produto:", err);
       } finally {
@@ -39,9 +42,7 @@ export default function ProductDetail() {
 
   function resolveImage(img?: string | null) {
     if (!img) return "/assets/placeholder.png";
-    if (!img.startsWith("/assets/")) {
-      return `/assets/${img}`;
-    }
+    if (!img.startsWith("/assets/")) return `/assets/${img}`;
     return img;
   }
 
@@ -51,54 +52,45 @@ export default function ProductDetail() {
     setProcessing(true);
 
     try {
-      // ROTA CORRETA DO BACKEND:
-      // POST /api/investment
-      // body: { productId, amount }
-      const body = {
+      await apiPost("/investments", {
         productId: product.id,
         amount: product.valorMinimo,
-      };
-
-      await apiPost("/api/investment", body);
+      });
 
       alert("Compra realizada com sucesso!");
       navigate("/loja");
     } catch (err: any) {
-      console.error("Erro ao comprar produto:", err);
-
       const msg = err?.message || "";
-
       if (msg.includes("Saldo insuficiente")) {
-        alert("Saldo insuficiente! Faça um depósito para continuar.");
+        alert("Saldo insuficiente! Faça um depósito.");
         navigate("/deposito");
         return;
       }
-
       alert(msg || "Erro ao processar compra.");
     } finally {
       setProcessing(false);
     }
   }
 
+  // ---------- UI DE CARREGAMENTO rápido, sem tela branca -----------
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Carregando produto...
+      <div className="min-h-screen flex items-center justify-center text-gray-600 text-sm">
+        Atualizando produto...
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-600">
+      <div className="min-h-screen flex items-center justify-center text-red-600 font-semibold">
         Produto não encontrado.
       </div>
     );
   }
 
-  const rendimentoReal = Math.round(
-    product.valorMinimo * (product.rendimento / 100)
-  );
+  // Cálculo CORRETO do backend (rendimentoDia é valor fixo KZ)
+  const rendimentoReal = Number(product.rendimentoDia) || 0;
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">

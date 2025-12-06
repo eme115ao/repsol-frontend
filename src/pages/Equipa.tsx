@@ -1,3 +1,4 @@
+// src/pages/Equipa.tsx
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -9,82 +10,61 @@ interface LevelUser {
   createdAt: string;
 }
 
+interface StatsResponse {
+  commissionsToday: number;
+  commissionsYesterday: number;
+  totalCommissions: number;
+}
+
 export default function Equipa() {
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-
-  // Dados reais do backend
   const [inviteCode, setInviteCode] = useState("");
   const [inviteCount, setInviteCount] = useState(0);
+  const [level1, setLevel1] = useState<LevelUser[]>([]);
 
-  // Estrutura original — mantida exatamente igual
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<StatsResponse>({
     commissionsToday: 0,
     commissionsYesterday: 0,
-    commissionsTotal: 0,
-    teamDeposits: 0,
-    teamWithdrawals: 0,
-    teamMembersTotal: 0,
-    level1: [] as LevelUser[],
-    level2: [] as LevelUser[],
+    totalCommissions: 0
   });
 
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
 
-  // Link de convite original
-  const inviteURL = `${window.location.origin}/#/register?code=${inviteCode}`;
+  const inviteURL = `${window.location.origin}/#/register?ref=${inviteCode}`;
 
   useEffect(() => {
     async function load() {
       try {
-        // Rota real 1
-        const codeRes = await apiGet("/api/referral/my-code");
-        setInviteCode(codeRes.code || "N/A");
+        const codeRes = await apiGet("/referral/invite-code");
+        setInviteCode(codeRes.inviteCode || "");
 
-        // Rota real 2
-        const countRes = await apiGet("/api/referral/invite-count");
+        const countRes = await apiGet("/referral/invite-count");
         setInviteCount(countRes.total || 0);
 
-        // Mantemos a estrutura completa
-        setStats((prev) => ({
-          ...prev,
-          teamMembersTotal: countRes.total || 0,
-        }));
+        const listRes = await apiGet("/referral/");
+        setLevel1(Array.isArray(listRes) ? listRes : []);
+
+        const statsRes = await apiGet("/referral/stats");
+        setStats(statsRes);
       } catch (err) {
-        console.error("Erro carregando estatísticas:", err);
-      } finally {
-        setLoading(false);
+        console.error("Erro carregando equipa:", err);
       }
     }
-
     load();
   }, []);
 
   function copyLink() {
     navigator.clipboard.writeText(inviteURL);
     setCopyStatus("copied");
-    setTimeout(() => setCopyStatus("idle"), 1200);
-  }
-
-  function getAvatarColor(id: number) {
-    const colors = ["#F97316", "#3B82F6", "#10B981", "#EAB308", "#6366F1"];
-    return colors[id % colors.length];
-  }
-
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center text-gray-500">
-        Carregando...
-      </div>
-    );
+    setTimeout(() => setCopyStatus("idle"), 1500);
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-28">
+    <div className="min-h-screen bg-slate-50 pb-28">
 
-      {/* HEADER – IDENTICO */}
-      <header className="bg-white p-4 shadow-sm flex items-center gap-3 sticky top-0 z-20">
+      {/* HEADER */}
+      <header className="bg-white p-4 shadow-sm flex items-center gap-3 sticky top-0 z-20 border-b border-slate-200">
         <ArrowLeft
           size={22}
           onClick={() => navigate("/minha")}
@@ -93,58 +73,50 @@ export default function Equipa() {
         <h1 className="text-lg font-bold">Minha Equipa</h1>
       </header>
 
-      <div className="p-4 max-w-[550px] mx-auto mt-2">
+      <div className="p-4 max-w-md mx-auto mt-3">
 
-        {/* GRID PRINCIPAL — IDÊNTICO */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-blue-100 p-4 rounded-xl text-center shadow">
-            <p className="text-sm text-gray-600">Comissões Hoje</p>
-            <h2 className="text-2xl font-bold text-blue-700">
+        {/* CARDS DE ESTATISTICAS */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center shadow-sm">
+            <p className="text-sm text-blue-600 font-medium">Comissões Hoje</p>
+            <p className="text-2xl font-bold text-blue-700 mt-1">
               {stats.commissionsToday.toFixed(2)}
-            </h2>
+            </p>
           </div>
 
-          <div className="bg-blue-100 p-4 rounded-xl text-center shadow">
-            <p className="text-sm text-gray-600">Comissões Ontem</p>
-            <h2 className="text-2xl font-bold text-blue-700">
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center shadow-sm">
+            <p className="text-sm text-indigo-600 font-medium">Comissões Ontem</p>
+            <p className="text-2xl font-bold text-indigo-700 mt-1">
               {stats.commissionsYesterday.toFixed(2)}
-            </h2>
+            </p>
           </div>
 
-          <div className="bg-white p-4 rounded-xl text-center shadow">
-            <p className="text-sm text-gray-600">Total de Comissões</p>
-            <h2 className="text-2xl font-bold text-gray-800">
-              {stats.commissionsTotal.toFixed(2)}
-            </h2>
+          <div className="bg-gray-50 border border-gray-300 rounded-xl p-4 text-center shadow-sm">
+            <p className="text-sm text-gray-700 font-medium">Total de Comissões</p>
+            <p className="text-2xl font-bold text-gray-800 mt-1">
+              {stats.totalCommissions.toFixed(2)}
+            </p>
           </div>
 
-          <div className="bg-white p-4 rounded-xl text-center shadow">
-            <p className="text-sm text-gray-600">Total de Membros</p>
-            <h2 className="text-2xl font-bold text-gray-800">
-              {stats.teamMembersTotal}
-            </h2>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl text-center shadow">
-            <p className="text-sm text-gray-600">Depósitos da Equipe</p>
-            <h2 className="text-2xl font-bold text-gray-800">
-              {stats.teamDeposits.toFixed(2)}
-            </h2>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl text-center shadow">
-            <p className="text-sm text-gray-600">Saques da Equipe</p>
-            <h2 className="text-2xl font-bold text-gray-800">
-              {stats.teamWithdrawals.toFixed(2)}
-            </h2>
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-center shadow-sm">
+            <p className="text-sm text-orange-700 font-medium">Total de Membros</p>
+            <p className="text-2xl font-bold text-orange-800 mt-1">
+              {inviteCount}
+            </p>
           </div>
         </div>
 
-        {/* LINK DE REFERÊNCIA — IDÊNTICO */}
-        <div className="bg-white border shadow-sm rounded-xl p-5 mb-6">
-          <p className="text-gray-600 text-sm mb-2">Link de Referência:</p>
+        {/* CÓDIGO + LINK */}
+        <div className="bg-white border shadow-sm rounded-xl p-5">
+          <p className="text-gray-700 text-sm mb-2">Seu código de convite:</p>
 
-          <div className="flex items-center gap-2">
+          <input
+            className="w-full bg-gray-100 px-3 py-2 rounded-lg text-center font-bold"
+            value={inviteCode || "..."}
+            readOnly
+          />
+
+          <div className="flex items-center gap-2 mt-3">
             <input
               className="flex-1 bg-gray-100 px-3 py-2 rounded-lg text-sm"
               value={inviteURL}
@@ -152,81 +124,29 @@ export default function Equipa() {
             />
             <button
               onClick={copyLink}
-              className="bg-blue-600 text-white p-2 rounded-lg active:scale-95"
+              className="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-lg active:scale-95 transition"
             >
               <Copy size={18} />
             </button>
           </div>
 
           {copyStatus === "copied" && (
-            <p className="text-green-500 text-sm mt-2">Link copiado!</p>
+            <p className="text-green-600 text-sm mt-2 text-center">
+              Link copiado!
+            </p>
           )}
         </div>
 
-        {/* LISTA DE NÍVEIS — IDÊNTICA */}
-        <div className="bg-white border shadow-sm rounded-xl p-5">
-          <h3 className="text-lg font-semibold mb-4">Tamanho da Equipa</h3>
-
-          {/* NIVEL 1 */}
-          <div className="mb-5">
-            <h4 className="font-bold text-gray-700 mb-2">Agente Nível 1</h4>
-
-            {stats.level1.length === 0 ? (
-              <p className="text-gray-500 text-sm">0 Pessoas</p>
-            ) : (
-              stats.level1.map((m) => (
-                <div
-                  key={m.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 border rounded-lg mb-2"
-                >
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{ backgroundColor: getAvatarColor(m.id) }}
-                  >
-                    {m.phone.slice(-2)}
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold">{m.phone}</p>
-                    <p className="text-xs text-gray-500">
-                      Desde {new Date(m.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* NIVEL 2 */}
-          <div>
-            <h4 className="font-bold text-gray-700 mb-2">Agente Nível 2</h4>
-
-            {stats.level2.length === 0 ? (
-              <p className="text-gray-500 text-sm">0 Pessoas</p>
-            ) : (
-              stats.level2.map((m) => (
-                <div
-                  key={m.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 border rounded-lg mb-2"
-                >
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{ backgroundColor: getAvatarColor(m.id) }}
-                  >
-                    {m.phone.slice(-2)}
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold">{m.phone}</p>
-                    <p className="text-xs text-gray-500">
-                      Desde {new Date(m.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+        {/* NÍVEL 1 */}
+        <div className="bg-white border shadow-sm rounded-xl p-5 mt-6">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">
+            Tamanho da Equipa
+          </h3>
+          <p className="text-gray-700 text-sm">
+            Agente Nível 1: <strong>{level1.length} pessoas</strong>
+          </p>
         </div>
+
       </div>
     </div>
   );

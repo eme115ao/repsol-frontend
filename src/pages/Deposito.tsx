@@ -1,3 +1,4 @@
+// src/pages/Deposito.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 import { Link } from "react-router-dom";
@@ -7,42 +8,34 @@ interface Banco {
   nome: string;
   titular: string;
   conta: string;
-  endereco: string | null;
+  iban?: string | null;
 }
 
 export default function Deposito() {
   const [bancos, setBancos] = useState<Banco[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  /* ============================================================================
+     CARREGAMENTO EM BACKGROUND — SEM TELA BRANCA, SEM LOADING
+  ============================================================================ */
   useEffect(() => {
-    (async () => {
+    async function load() {
       try {
-        // ROTA CORRETA DO BACKEND
-        // GET /api/banco/empresa
-        const res = await apiGet<any>("/api/banco/empresa");
+        const res = await apiGet<any>("/banco/empresa");
 
         const lista: Banco[] = Array.isArray(res)
           ? res
-          : Array.isArray(res?.bancos)
+          : Array.isArray(res.bancos)
           ? res.bancos
           : [];
 
         setBancos(lista);
       } catch (err) {
         console.error("Erro ao carregar bancos:", err);
-      } finally {
-        setLoading(false);
       }
-    })();
-  }, []);
+    }
 
-  if (loading) {
-    return (
-      <div className="w-full text-center py-20 text-gray-600 text-lg font-medium">
-        Carregando bancos...
-      </div>
-    );
-  }
+    load(); // dispara sem bloquear renderização
+  }, []);
 
   const bancoIcons: Record<string, string> = {
     BAI: "/assets/icons/bai.png",
@@ -65,17 +58,20 @@ export default function Deposito() {
         Escolha o banco para efetuar a transferência.
       </p>
 
+      {/* Lista aparece imediatamente, vazia no início, sem loading */}
       {bancos.length === 0 && (
-        <p className="text-center text-gray-500">Nenhum banco cadastrado.</p>
+        <p className="text-center text-gray-400 text-sm">
+          Nenhum banco disponível no momento.
+        </p>
       )}
 
-      <div className="space-y-5">
+      <div className="space-y-5 mt-4">
         {bancos.map((b) => (
           <Link
             to="/deposito/confirmar"
             key={b.id}
             state={{ banco: b }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 p-5 flex items-center gap-5 transition hover:shadow-xl"
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 p-5 flex items-center gap-5 transition hover:shadow-xl active:scale-[0.98]"
           >
             <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-300 flex items-center justify-center overflow-hidden shadow-inner">
               <img
@@ -88,9 +84,7 @@ export default function Deposito() {
             <div className="flex-1">
               <p className="text-lg font-bold text-gray-900">{b.nome}</p>
               <p className="text-sm text-gray-600">Titular: {b.titular}</p>
-              <p className="text-sm font-semibold text-gray-800">
-                {b.conta}
-              </p>
+              <p className="text-sm font-semibold text-gray-800">{b.conta}</p>
             </div>
 
             <div className="text-gray-400 text-xl">›</div>

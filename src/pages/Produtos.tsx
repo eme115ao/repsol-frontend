@@ -2,36 +2,43 @@ import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 import { Link } from "react-router-dom";
 
-interface Product {
+interface ProductRaw {
   id: number;
   nome: string;
   valorMinimo: number;
-  rendimento: number;
+  rendimento?: number;
+  rendimentoDia?: number;
   duracaoDias: number;
   imagem: string | null;
+  [k: string]: any;
 }
 
 export default function Produtos() {
-
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<ProductRaw[]>([]);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await apiGet<any>("/api/products");
+        const res = await apiGet<any>("/products");
 
-        const list = Array.isArray(res)
+        const list: ProductRaw[] = Array.isArray(res)
           ? res
           : Array.isArray(res.products)
           ? res.products
           : [];
 
-        setProducts(list);
+        const normalized = list.map((p) => ({
+          ...p,
+          valorMinimo: Number(p.valorMinimo || 0),
+          rendimentoDia:
+            p.rendimentoDia !== undefined ? Number(p.rendimentoDia) : undefined,
+          rendimento:
+            p.rendimento !== undefined ? Number(p.rendimento) : undefined,
+        }));
+
+        setProducts(normalized);
       } catch (err) {
         console.error("Erro ao carregar produtos:", err);
-      } finally {
-        setLoading(false);
       }
     })();
   }, []);
@@ -41,30 +48,48 @@ export default function Produtos() {
     return `/assets/${img}`;
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Carregando produtos...
-      </div>
-    );
+  function getRendimentoDiario(p: ProductRaw): number {
+    if (typeof p.rendimentoDia === "number") return p.rendimentoDia;
+
+    if (typeof p.rendimento === "number") {
+      if (p.rendimento > 100) return Math.round(p.rendimento);
+      return Math.round(p.valorMinimo * (p.rendimento / 100));
+    }
+
+    return 0;
   }
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 pt-8 px-4">
-      <h1 className="text-3xl font-extrabold text-center mb-10 text-gray-900 tracking-tight">
+
+      {/* TÍTULO PRINCIPAL */}
+      <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-900 tracking-tight">
         Produtos
       </h1>
 
-      <div className="max-w-xl mx-auto space-y-6">
+      {/* LISTA DE PRODUTOS */}
+      <div className="max-w-xl mx-auto space-y-8">
         {products.map((p) => {
-          const rendimentoReal = Math.round(p.valorMinimo * (p.rendimento / 100));
+          const rendimentoDiario = getRendimentoDiario(p);
 
           return (
             <div
               key={p.id}
-              className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 flex gap-6 items-center hover:shadow-2xl transition-all"
+              className="
+                bg-white rounded-3xl p-6 flex gap-6 items-center 
+                border border-slate-200 shadow-xl 
+                hover:shadow-[0_12px_26px_rgba(0,0,0,0.15)]
+                hover:scale-[1.015]
+                transition-all duration-300 ease-out
+              "
             >
-              <div className="w-24 h-24 rounded-2xl bg-orange-50 overflow-hidden border-2 border-orange-200 flex items-center justify-center shadow-inner">
+              {/* IMAGEM DO PRODUTO */}
+              <div
+                className="
+                  w-24 h-24 rounded-2xl bg-orange-50 overflow-hidden 
+                  border-2 border-orange-200 flex items-center justify-center shadow-inner
+                "
+              >
                 <img
                   src={resolveImage(p.imagem)}
                   alt={p.nome}
@@ -72,36 +97,56 @@ export default function Produtos() {
                 />
               </div>
 
+              {/* INFORMAÇÕES */}
               <div className="flex-1">
                 <p className="text-xl font-bold text-gray-900 leading-tight">
                   {p.nome}
                 </p>
 
-                <p className="mt-1 text-sm text-gray-700">
-                  Mínimo: <span className="font-semibold text-gray-900">{p.valorMinimo.toLocaleString()} Kz</span>
+                <p className="text-sm text-gray-700 mt-2">
+                  Mínimo:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {p.valorMinimo.toLocaleString()} Kz
+                  </span>
                 </p>
 
                 <p className="text-sm text-gray-700">
                   Rendimento diário:{" "}
                   <span className="font-semibold text-green-700">
-                    {rendimentoReal.toLocaleString()} Kz
+                    {rendimentoDiario.toLocaleString()} Kz
                   </span>
                 </p>
 
                 <p className="text-sm text-gray-700">
-                  Duração: {p.duracaoDias} dias
+                  Duração:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {p.duracaoDias} dias
+                  </span>
                 </p>
               </div>
 
+              {/* BOTÃO */}
               <Link
                 to={`/produto/${p.id}`}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-5 py-3 rounded-2xl shadow active:scale-95 transition-all whitespace-nowrap"
+                className="
+                  bg-orange-500 hover:bg-orange-600 
+                  text-white font-bold px-6 py-3 
+                  rounded-2xl shadow active:scale-95 
+                  transition-all duration-200 whitespace-nowrap
+                "
               >
                 Comprar
               </Link>
             </div>
           );
         })}
+
+        {/* VAZIO */}
+        {products.length === 0 && (
+          <p className="text-center text-gray-500 text-sm">
+            Nenhum produto disponível
+          </p>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
+// src/pages/ConfirmarDeposito.tsx
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { apiPost } from "../services/api";
-import { FaCopy, FaUpload, FaCheckCircle } from "react-icons/fa";
+import { FaCopy, FaUpload } from "react-icons/fa";
 
 interface Banco {
   id: number;
@@ -10,37 +11,35 @@ interface Banco {
   conta: string;
 }
 
-// Função que resolve ícones reais dos bancos
 function getBankLogo(bankName: string) {
   const nome = bankName.toLowerCase();
-
   if (nome.includes("bai")) return "/assets/bancos/bai.png";
   if (nome.includes("bfa")) return "/assets/bancos/bfa.png";
   if (nome.includes("bic")) return "/assets/bancos/bic.png";
   if (nome.includes("atl")) return "/assets/bancos/atlantico.png";
   if (nome.includes("sol")) return "/assets/bancos/sol.png";
   if (nome.includes("keve")) return "/assets/bancos/keve.png";
-
   return "/assets/bancos/default.png";
 }
 
 export default function ConfirmarDeposito() {
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const banco: Banco | undefined = location.state?.banco;
 
-  const [valor, setValor] = useState<number>(0);
+  const [valor, setValor] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [comprovativoBase64, setComprovativoBase64] = useState<string | null>(
-    null
-  );
+  const [comprovativoBase64, setComprovativoBase64] = useState<string | null>(null);
+
+  const [msg, setMsg] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!banco) {
     return (
-      <div className="p-6 text-center">
+      <div className="p-6 text-center bg-slate-50 min-h-screen">
         <p className="text-red-600 font-semibold">Nenhum banco selecionado.</p>
         <button
           onClick={() => navigate("/deposito")}
@@ -52,6 +51,9 @@ export default function ConfirmarDeposito() {
     );
   }
 
+  /* ============================================================================
+     UPLOAD DO COMPROVATIVO
+  ============================================================================ */
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] || null;
     setFile(f);
@@ -62,42 +64,49 @@ export default function ConfirmarDeposito() {
       return;
     }
 
-    // Preview da imagem
     setPreview(URL.createObjectURL(f));
 
-    // conversão base64
     const reader = new FileReader();
     reader.onloadend = () => {
-      const result = reader.result;
-      if (typeof result === "string") {
-        setComprovativoBase64(result);
+      if (typeof reader.result === "string") {
+        setComprovativoBase64(reader.result);
       }
     };
     reader.readAsDataURL(f);
   }
 
+  /* ============================================================================
+     CONFIRMAR DEPÓSITO — sem tela branca, sem alertas feios
+  ============================================================================ */
   async function confirmarDeposito() {
-    if (!valor || valor <= 0) {
-      alert("Insira o valor do depósito.");
+    setMsg("");
+    setError("");
+
+    if (!valor || Number(valor) <= 0) {
+      setError("Insira o valor do depósito.");
       return;
     }
     if (!file || !comprovativoBase64) {
-      alert("Envie o comprovativo.");
+      setError("Envie o comprovativo.");
       return;
     }
 
-    setLoading(true);
-
     try {
-      await apiPost("/api/transaction/deposit", {
-        amount: valor,
+      setLoading(true);
+
+      await apiPost("/transactions/deposit", {
+        amount: Number(valor),
         comprovativo: comprovativoBase64,
       });
 
-      navigate("/deposito/sucesso");
+      setMsg("Depósito enviado com sucesso!");
+
+      setTimeout(() => {
+        navigate("/deposito/sucesso");
+      }, 1000);
+
     } catch (err: any) {
-      console.error(err);
-      alert(err.message || "Erro ao enviar depósito.");
+      setError(err.message || "Erro ao enviar depósito.");
     } finally {
       setLoading(false);
     }
@@ -107,23 +116,36 @@ export default function ConfirmarDeposito() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6">
-      <h1 className="text-2xl font-bold text-center text-gray-800 mb-6 animate-fadeIn">
+
+      {msg && (
+        <div className="mb-4 p-3 bg-green-600 text-white rounded-lg text-center font-semibold">
+          {msg}
+        </div>
+      )}
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-600 text-white rounded-lg text-center font-semibold">
+          {error}
+        </div>
+      )}
+
+      <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
         Confirmar Depósito
       </h1>
 
-      <div className="max-w-md mx-auto bg-white shadow-2xl rounded-2xl p-6 border border-gray-200 space-y-6 animate-slideUp">
+      <div className="max-w-md mx-auto bg-white shadow-xl rounded-2xl p-6 border border-gray-200 space-y-6">
 
-        {/* CARD DO BANCO */}
-        <div className="p-5 rounded-xl bg-slate-100 border border-slate-300 shadow-sm transition hover:shadow-md">
+        {/* BANCO */}
+        <div className="p-5 rounded-xl bg-slate-100 border border-slate-300 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <img
               src={logo}
-              className="w-14 h-14 rounded-xl border shadow-sm bg-white object-contain"
+              className="w-14 h-14 rounded-xl border shadow-sm object-contain"
             />
 
             <div>
               <p className="text-xl font-bold text-gray-900">{banco.nome}</p>
-              <p className="text-gray-700 -mt-1">
+              <p className="text-gray-700">
                 Titular: <span className="font-semibold">{banco.titular}</span>
               </p>
             </div>
@@ -146,7 +168,7 @@ export default function ConfirmarDeposito() {
           </button>
         </div>
 
-        {/* VALOR DO DEPÓSITO */}
+        {/* VALOR */}
         <div>
           <label className="text-sm font-medium text-gray-700">
             Valor do Depósito (Kz)
@@ -154,13 +176,13 @@ export default function ConfirmarDeposito() {
           <input
             type="number"
             placeholder="Ex: 9000"
-            value={valor || ""}
-            onChange={(e) => setValor(Number(e.target.value))}
-            className="w-full mt-1 p-3 bg-slate-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            className="w-full mt-1 p-3 bg-slate-50 border border-gray-300 rounded-xl"
           />
         </div>
 
-        {/* ENVIO DO COMPROVATIVO */}
+        {/* COMPROVATIVO */}
         <div>
           <label className="text-sm font-medium text-gray-700">
             Enviar Comprovativo
@@ -168,9 +190,7 @@ export default function ConfirmarDeposito() {
 
           <label className="w-full mt-2 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-5 text-gray-600 cursor-pointer hover:border-orange-500 transition">
             <FaUpload className="text-3xl mb-2" />
-            <span className="text-sm">
-              {file ? file.name : "Escolher ficheiro"}
-            </span>
+            <span className="text-sm">{file ? file.name : "Escolher ficheiro"}</span>
 
             <input type="file" className="hidden" onChange={handleFileChange} />
           </label>
@@ -186,7 +206,7 @@ export default function ConfirmarDeposito() {
           )}
         </div>
 
-        {/* BOTÃO CONFIRMAR */}
+        {/* CONFIRMAR */}
         <button
           disabled={loading}
           onClick={confirmarDeposito}

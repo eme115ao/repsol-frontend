@@ -1,3 +1,4 @@
+// src/components/AppLayout.tsx
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
@@ -7,43 +8,60 @@ import WhatsAppFloating from "./WhatsAppFloating";
 export default function AppLayout() {
   const loc = useLocation();
 
-  // Tratamento correto para HashRouter
-  const current =
-    loc.hash && loc.hash.startsWith("#/")
-      ? loc.hash.replace("#", "")
-      : loc.pathname;
+  // Normalizar caminho REAL quando usando HashRouter
+  // loc.hash = "#/home"  → "/home"
+  // loc.hash = "#/produto/3?foo=1" → "/produto/3"
+  let current = loc.hash.startsWith("#/")
+    ? loc.hash.replace("#", "")
+    : loc.pathname;
 
-  // Títulos fixos da aplicação
+  // Remover query params e anchors do caminho
+  current = current.split("?")[0].split("#")[0];
+
+  // ----------------------
+  // Títulos oficiais
+  // ----------------------
   const titles: Record<string, string> = {
+    "/home": "Início",
     "/inicio": "Início",
-    "/dashboard": "Dashboard",
     "/produtos": "Produtos",
     "/loja": "Minha Loja",
     "/deposito": "Depósito",
     "/deposito/confirmar": "Confirmar Depósito",
+    "/deposito/sucesso": "Depósito Sucesso",
     "/levantamento": "Levantamento",
+    "/levantamento/sucesso": "Levantamento Sucesso",
     "/historico": "Histórico",
     "/meubanco": "Meu Banco",
     "/regras": "Regras",
-    "/equipa": "Equipa",     // CORRIGIDO
+    "/convidar": "Convidar",
+    "/equipa": "Equipa",
     "/minha": "Minha Conta"
   };
 
-  // Páginas onde Navbar e BottomNav devem sumir
-  const hideNav = [
-    "/produto/",       // CORRETO para páginas de produto
+  // ----------------------
+  // Páginas sem Navbar/BottomNav
+  // ----------------------
+  const hideNavPrefixes = [
+    "/produto/",
+    "/deposito/confirmar",
     "/admin",
     "/admin/dashboard",
     "/admin/transacoes"
   ];
 
-  const shouldHide = hideNav.some((prefix) => current.startsWith(prefix));
+  const shouldHide = hideNavPrefixes.some((prefix) =>
+    current.startsWith(prefix)
+  );
 
-  // Títulos dinâmicos
+  // ----------------------
+  // Título dinâmico
+  // ----------------------
   let title = titles[current] || "";
 
-  if (current.startsWith("/produto/")) title = "Detalhes do Produto";
-  if (current.startsWith("/deposito/confirmar")) title = "Confirmar Depósito";
+  if (current.startsWith("/produto/")) {
+    title = "Detalhes do Produto";
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">

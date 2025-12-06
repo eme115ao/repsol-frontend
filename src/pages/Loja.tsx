@@ -2,122 +2,99 @@
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 
-interface ProdutoInvestido {
-  id: number;
-  nome: string;
-  imagem: string | null;
-  rendimento?: number;
-  valorMinimo?: number;
-  rendimentoDiario?: number;
-}
-
-interface Investimento {
-  id: number;
-  product: ProdutoInvestido;
-  amount?: number;
-  investido?: number;
-  createdAt: string;
-}
-
 export default function Loja() {
-  const [lista, setLista] = useState<Investimento[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [meus, setMeus] = useState<any[]>([]);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await apiGet<any>("/api/investment");
-
-        const lista: Investimento[] = Array.isArray(res)
-          ? res
-          : Array.isArray(res?.investments)
-          ? res.investments
-          : [];
-
-        setLista(lista);
-      } catch (err) {
-        console.error("Erro ao carregar produtos comprados:", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    carregar();
   }, []);
+
+  async function carregar() {
+    try {
+      setErro("");
+      const investments = await apiGet("/investments");
+
+      setMeus(Array.isArray(investments) ? investments : []);
+    } catch (e: any) {
+      console.error("Erro ao carregar loja:", e);
+      setErro("Erro ao carregar seus produtos.");
+    }
+  }
 
   function resolveImage(img?: string | null) {
     if (!img) return "/assets/placeholder.png";
-    if (!img.startsWith("/assets/")) {
-      return `/assets/${img}`;
-    }
-    return img;
-  }
-
-  function formatKz(v: number | undefined | null) {
-    if (!v) return "0 Kz";
-    return `${v.toLocaleString()} Kz`;
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Carregando…
-      </div>
-    );
+    return `/assets/${img}`;
   }
 
   return (
-    <div className="px-4 py-6 max-w-md mx-auto min-h-screen bg-slate-50 pb-24">
-      <h1 className="text-2xl font-bold mb-4 text-gray-900">Minha Loja</h1>
+    <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-6 max-w-md mx-auto">
 
-      {lista.length === 0 && (
-        <p className="text-center text-gray-600">
+      {/* ERRO */}
+      {erro && (
+        <div className="mb-4 p-3 bg-red-600 text-white rounded-xl text-center font-semibold shadow">
+          {erro}
+        </div>
+      )}
+
+      {/* TÍTULO */}
+      <h1 className="text-3xl font-extrabold text-center text-gray-900 mb-8 tracking-tight">
+        Meus Produtos
+      </h1>
+
+      {/* SEM PRODUTOS */}
+      {meus.length === 0 && (
+        <p className="text-gray-500 text-center text-sm">
           Você ainda não comprou nenhum produto.
         </p>
       )}
 
-      <div className="space-y-4">
-        {lista.map((item) => {
-          const produto = item.product || ({} as ProdutoInvestido);
-          const investido = item.amount ?? item.investido ?? 0;
-
-          const base = investido || produto.valorMinimo || 0;
-          const rendimentoDia =
-            produto.rendimentoDiario ??
-            (produto.rendimento
-              ? Math.round(base * (produto.rendimento / 100))
-              : 0);
+      {/* LISTA DE PRODUTOS */}
+      <div className="space-y-5">
+        {meus.map((inv) => {
+          const p = inv.product || {};
+          const img = resolveImage(p.imagem);
 
           return (
             <div
-              key={item.id}
-              className="bg-white rounded-2xl shadow p-4 flex gap-4 items-center border border-slate-200"
+              key={inv.id}
+              className="
+                bg-white p-5 rounded-3xl shadow-xl border border-slate-200 
+                flex gap-5 items-center 
+                hover:shadow-2xl active:scale-[0.98] transition-all
+              "
             >
-              <div className="w-16 h-16 rounded-xl bg-orange-50 border border-orange-200 overflow-hidden flex items-center justify-center">
+              {/* IMAGEM */}
+              <div className="w-20 h-20 rounded-2xl bg-orange-50 overflow-hidden border border-orange-200 flex items-center justify-center shadow-inner">
                 <img
-                  src={resolveImage(produto.imagem)}
-                  alt={produto.nome}
-                  className="w-full h-full object-contain p-1"
+                  src={img}
+                  alt={p.nome || "Produto"}
+                  className="w-full h-full object-contain p-2"
                 />
               </div>
 
+              {/* TEXTO */}
               <div className="flex-1">
-                <p className="font-bold text-gray-900 text-lg">
-                  {produto.nome}
+                <p className="text-lg font-bold text-gray-900">
+                  {p.nome || "Produto indefinido"}
                 </p>
 
                 <p className="text-sm text-gray-600">
                   Investido:{" "}
-                  <span className="font-semibold">{formatKz(investido)}</span>
-                </p>
-
-                <p className="text-sm text-gray-600">
-                  Desde:{" "}
                   <span className="font-semibold">
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {(inv.investido ?? 0).toLocaleString()} Kz
                   </span>
                 </p>
 
-                <p className="text-sm text-blue-600 font-semibold">
-                  Rende {formatKz(rendimentoDia)} / dia
+                <p className="text-sm text-gray-600">
+                  Rend. acumulado:{" "}
+                  <span className="font-semibold">
+                    {(inv.rendimentoAcumulado ?? 0).toLocaleString()} Kz
+                  </span>
+                </p>
+
+                <p className="text-xs text-gray-500 mt-1">
+                  Desde: {new Date(inv.createdAt).toLocaleDateString()}
                 </p>
               </div>
             </div>
