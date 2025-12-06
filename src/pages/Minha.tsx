@@ -1,13 +1,7 @@
-// src/pages/Minha.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  FiBox,
-  FiCreditCard,
-  FiBarChart2,
-  FiUsers,
-} from "react-icons/fi";
+import { FiBox, FiCreditCard, FiBarChart2, FiUsers } from "react-icons/fi";
 
 /* TIPOS */
 interface Investimento {
@@ -47,8 +41,8 @@ export default function Minha() {
     investimentos: [],
   });
 
-  // LOGO PROFISSIONAL
-  const logoUrl = "/src/assets/logo.png";
+  // CORREÇÃO DEFINITIVA PARA NETLIFY — LOGO NA PASTA PUBLIC
+  const logoUrl = "/logo.png";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -68,7 +62,7 @@ export default function Minha() {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
-
+      
       {/* TÍTULO */}
       <h1 className="text-2xl font-extrabold text-gray-900 mb-6 tracking-tight">
         Minha Conta
@@ -78,7 +72,7 @@ export default function Minha() {
       <div className="bg-white rounded-3xl shadow-xl p-6 border border-slate-200 mb-6 hover:shadow-2xl transition-all duration-300">
         <div className="flex items-center gap-5">
 
-          {/* AVATAR */}
+          {/* AVATAR / LOGO */}
           <div className="w-20 h-20 rounded-full bg-white border border-slate-300 shadow-lg flex items-center justify-center overflow-hidden">
             <img
               src={logoUrl}
@@ -100,14 +94,11 @@ export default function Minha() {
 
       {/* SALDOS PRINCIPAIS */}
       <div className="bg-white p-6 rounded-3xl shadow-lg border border-slate-200 hover:shadow-2xl transition-all duration-300">
-        <h2 className="text-sm font-semibold text-gray-600">
-          Saldo Disponível
-        </h2>
+        <h2 className="text-sm font-semibold text-gray-600">Saldo Disponível</h2>
         <p className="text-4xl font-extrabold text-orange-600 mt-1 mb-4">
           {data.saldoDisponivel.toLocaleString()} Kz
         </p>
 
-        {/* GRID DOS VALORES */}
         <div className="grid grid-cols-2 gap-4 text-center">
 
           <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 shadow-sm">
@@ -162,9 +153,7 @@ export default function Minha() {
       </Link>
 
       {/* MEUS PRODUTOS */}
-      <h2 className="text-xl font-extrabold text-gray-900 mt-8 mb-3">
-        Meus Produtos
-      </h2>
+      <h2 className="text-xl font-extrabold text-gray-900 mt-8 mb-3">Meus Produtos</h2>
 
       {data.investimentos.length === 0 ? (
         <p className="text-gray-600 text-sm">Você ainda não possui produtos.</p>
@@ -190,17 +179,14 @@ export default function Minha() {
               </div>
 
               <div className="flex-1">
-                <p className="text-lg font-bold text-gray-900">
-                  {inv.product.nome}
-                </p>
+                <p className="text-lg font-bold text-gray-900">{inv.product.nome}</p>
 
                 <p className="text-sm text-gray-600">
                   Investido: {inv.investido.toLocaleString()} Kz
                 </p>
 
                 <p className="text-sm text-gray-600">
-                  Rend. acumulado:{" "}
-                  {inv.rendimentoAcumulado.toLocaleString()} Kz
+                  Rend. acumulado: {inv.rendimentoAcumulado.toLocaleString()} Kz
                 </p>
 
                 <p className="text-xs text-gray-500">
