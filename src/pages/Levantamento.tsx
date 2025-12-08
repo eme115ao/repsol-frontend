@@ -36,9 +36,7 @@ export default function Levantamento() {
   useEffect(() => {
     (async () => {
       try {
-        // ============================
-        // ROTAS CORRETAS DO BACKEND
-        // ============================
+        // BANCOS DO USUÁRIO
         const res = await apiGet<{ bancos: BancoUsuario[] }>("/banco/usuario");
 
         if (res.bancos && Array.isArray(res.bancos)) {
@@ -46,7 +44,7 @@ export default function Levantamento() {
           if (res.bancos.length > 0) setSelected(res.bancos[0].id);
         }
 
-        // SALDO DO DASHBOARD
+        // SALDO — DASHBOARD
         const saldoRes = await apiGet<{ saldoDisponivel: number }>("/dashboard");
         setSaldo(saldoRes.saldoDisponivel || 0);
 
@@ -68,9 +66,14 @@ export default function Levantamento() {
     setLoading(true);
 
     try {
-      await apiPost("/transaction/withdraw", {
+      const valorOriginal = Number(valor);
+      const valorComDesconto = Number((valorOriginal * 0.86).toFixed(2)); // 14% desconto
+
+      await apiPost("/withdraw", {
         bancoId: selected,
-        amount: Number(valor),
+        amount: valorComDesconto,
+        valorOriginal,
+        desconto: "14%",
       });
 
       navigate("/levantamento/sucesso");
