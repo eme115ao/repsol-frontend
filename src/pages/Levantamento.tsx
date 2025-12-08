@@ -1,3 +1,4 @@
+// src/pages/Levantamento.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet, apiPost } from "../services/api";
 import { FaMoneyBillWave } from "react-icons/fa";
@@ -30,13 +31,12 @@ export default function Levantamento() {
   };
 
   const hoje = new Date();
-  const diaSemana = hoje.getDay();
+  const diaSemana = hoje.getDay(); // 0 domingo, 6 sábado
   const saqueBloqueado = diaSemana === 0 || diaSemana === 5 || diaSemana === 6;
 
   useEffect(() => {
     (async () => {
       try {
-        // BANCOS DO USUÁRIO
         const res = await apiGet<{ bancos: BancoUsuario[] }>("/banco/usuario");
 
         if (res.bancos && Array.isArray(res.bancos)) {
@@ -44,10 +44,8 @@ export default function Levantamento() {
           if (res.bancos.length > 0) setSelected(res.bancos[0].id);
         }
 
-        // SALDO — DASHBOARD
         const saldoRes = await apiGet<{ saldoDisponivel: number }>("/dashboard");
         setSaldo(saldoRes.saldoDisponivel || 0);
-
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
       }
@@ -57,23 +55,26 @@ export default function Levantamento() {
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
 
+    const valorNum = Number(valor);
+
     if (!selected) return alert("Selecione um banco.");
-    if (!valor || Number(valor) <= 0) return alert("Insira um valor válido.");
-    if (Number(valor) > saldo) return alert("Valor excede o saldo disponível.");
+    if (!valor || valorNum <= 0) return alert("Insira um valor válido.");
+    if (valorNum < 500) return alert("O valor mínimo de saque é 500 Kz.");
+    if (valorNum > saldo) return alert("Valor excede o saldo disponível.");
     if (saqueBloqueado)
       return alert("Os levantamentos só podem ser feitos de segunda a quinta-feira.");
 
     setLoading(true);
 
     try {
-      const valorOriginal = Number(valor);
-      const valorComDesconto = Number((valorOriginal * 0.86).toFixed(2)); // 14% desconto
+      const valorOriginal = valorNum;
+      const valorComDesconto = Number((valorOriginal * 0.86).toFixed(2));
 
-      await apiPost("/withdraw", {
+      await apiPost("/transaction/withdraw", {
         bancoId: selected,
         amount: valorComDesconto,
         valorOriginal,
-        desconto: "14%",
+        descontoAplicado: "14%",
       });
 
       navigate("/levantamento/sucesso");
@@ -152,7 +153,7 @@ export default function Levantamento() {
             type="number"
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            placeholder="Ex: 50000"
+            placeholder="Mínimo: 500 Kz"
             className="w-full p-3 border rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-orange-400 text-lg"
           />
         </div>
@@ -173,11 +174,9 @@ export default function Levantamento() {
 
         <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
           <p className="text-xs text-blue-800 leading-relaxed text-center">
-            O seu pedido de saque será processado o mais breve possível.
-            Os levantamentos são realizados apenas de segunda a quinta-feira,
-            com tempo de processamento entre 24 a 48 horas.
-            Após enviar a solicitação, aguarde com paciência enquanto a equipa
-            conclui a validação.
+            O seu pedido será processado o mais breve possível.
+            Saques apenas de segunda a quinta-feira.
+            Taxa aplicada: 14%. Valor mínimo: 500 Kz.
           </p>
         </div>
       </form>

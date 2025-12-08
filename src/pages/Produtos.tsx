@@ -68,7 +68,7 @@ export default function Produtos() {
       </h1>
 
       {/* LISTA DE PRODUTOS */}
-      <div className="max-w-xl mx-auto space-y-8">
+      <div className="max-w-xl mx-auto space-y-10">
         {products.map((p) => {
           const rendimentoDiario = getRendimentoDiario(p);
 
@@ -78,22 +78,22 @@ export default function Produtos() {
               className="
                 bg-white rounded-3xl p-6 flex gap-6 items-center 
                 border border-slate-200 shadow-xl 
-                hover:shadow-[0_12px_26px_rgba(0,0,0,0.15)]
-                hover:scale-[1.015]
+                hover:shadow-[0_14px_30px_rgba(0,0,0,0.15)]
+                hover:scale-[1.02]
                 transition-all duration-300 ease-out
               "
             >
-              {/* IMAGEM DO PRODUTO */}
+              {/* IMAGEM MUITO MAIOR */}
               <div
                 className="
-                  w-24 h-24 rounded-2xl bg-orange-50 overflow-hidden 
-                  border-2 border-orange-200 flex items-center justify-center shadow-inner
+                  w-32 h-32 rounded-2xl bg-orange-50 overflow-hidden 
+                  border-4 border-orange-300 flex items-center justify-center shadow-inner
                 "
               >
                 <img
                   src={resolveImage(p.imagem)}
                   alt={p.nome}
-                  className="w-full h-full object-contain p-2"
+                  className="w-full h-full object-contain p-1"
                 />
               </div>
 
@@ -141,7 +141,7 @@ export default function Produtos() {
           );
         })}
 
-        {/* VAZIO */}
+        {/* NENHUM PRODUTO */}
         {products.length === 0 && (
           <p className="text-center text-gray-500 text-sm">
             Nenhum produto disponível
