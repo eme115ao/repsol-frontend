@@ -3,14 +3,11 @@ import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import BottomNav from "./BottomNav";
-import WhatsAppFloating from "./WhatsAppFloating";
 
 export default function AppLayout() {
   const loc = useLocation();
 
   // Normalizar caminho REAL quando usando HashRouter
-  // loc.hash = "#/home"  → "/home"
-  // loc.hash = "#/produto/3?foo=1" → "/produto/3"
   let current = loc.hash.startsWith("#/")
     ? loc.hash.replace("#", "")
     : loc.pathname;
@@ -31,7 +28,7 @@ export default function AppLayout() {
     "/deposito/sucesso": "Depósito Sucesso",
     "/levantamento": "Levantamento",
     "/levantamento/sucesso": "Levantamento Sucesso",
-    "/historico": "Histórico",
+    "/historico": "Historico",
     "/meubanco": "Meu Banco",
     "/regras": "Regras",
     "/convidar": "Convidar",
@@ -40,7 +37,7 @@ export default function AppLayout() {
   };
 
   // ----------------------
-  // Páginas sem Navbar/BottomNav
+  // Páginas que escondem Navbar e BottomNav
   // ----------------------
   const hideNavPrefixes = [
     "/produto/",
@@ -72,7 +69,8 @@ export default function AppLayout() {
       </main>
 
       {!shouldHide && <BottomNav />}
-      {!shouldHide && <WhatsAppFloating />}
+
+      {/* WhatsAppFloating removido para evitar erro e usar apenas o botão da Home */}
     </div>
   );
 }
