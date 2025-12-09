@@ -8,6 +8,7 @@ import WhatsAppMenuButton from "./WhatsAppMenuButton";
 export default function AppLayout() {
   const loc = useLocation();
 
+  // Corrige rotas com hash e remove parâmetros
   let current = loc.hash.startsWith("#/")
     ? loc.hash.replace("#", "")
     : loc.pathname;
@@ -24,7 +25,7 @@ export default function AppLayout() {
     "/deposito/sucesso": "Depósito Sucesso",
     "/levantamento": "Levantamento",
     "/levantamento/sucesso": "Levantamento Sucesso",
-    "/historico": "Historico",
+    "/historico": "Histórico",
     "/meubanco": "Meu Banco",
     "/regras": "Regras",
     "/convidar": "Convidar",
@@ -48,15 +49,22 @@ export default function AppLayout() {
   if (current.startsWith("/produto/")) title = "Detalhes do Produto";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col relative">
+    <div className="min-h-screen bg-slate-50 flex flex-col relative pb-20 pb-safe">
+      {/* Navbar */}
       {!shouldHide && <Navbar title={title} />}
 
-      <main className="flex-1 w-full max-w-md mx-auto">
+      {/* Conteúdo */}
+      <main className="flex-1 w-full max-w-md mx-auto px-2 mb-safe">
         <Outlet />
       </main>
 
-      {!shouldHide && <BottomNav />}
-      {!shouldHide && <WhatsAppMenuButton />}
+      {/* Rodapé + WhatsApp */}
+      {!shouldHide && (
+        <>
+          <BottomNav />
+          <WhatsAppMenuButton />
+        </>
+      )}
     </div>
   );
 }

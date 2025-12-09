@@ -1,3 +1,4 @@
+// src/pages/Historico.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 import {
@@ -25,8 +26,8 @@ export default function Historico() {
 
   async function carregar() {
     try {
-      // ROTA CORRETA DO BACKEND
-      const data = await apiGet<Transaction[]>("/transactions/");
+      // ROTA DEFINITIVA DO BACKEND
+      const data = await apiGet<Transaction[]>("/transactions");
 
       const lista = Array.isArray(data)
         ? [...data].sort(
@@ -81,50 +82,50 @@ function HistoricoItem({ item }: { item: Transaction }) {
 
   switch (item.type.toUpperCase()) {
     case "DEPOSIT":
-      icon = <FaArrowDown size={24} className="text-blue-600" />;
+      icon = <FaArrowDown size={26} className="text-blue-600" />;
       cor = "text-blue-600";
       titulo = "Depósito";
       break;
 
     case "WITHDRAW":
-      icon = <FaArrowUp size={24} className="text-red-600" />;
+      icon = <FaArrowUp size={26} className="text-red-600" />;
       cor = "text-red-600";
       titulo = "Levantamento";
       break;
 
     case "INVESTMENT":
     case "INVESTMENT_YIELD":
-      icon = <FaCoins size={24} className="text-orange-600" />;
+      icon = <FaCoins size={26} className="text-orange-600" />;
       cor = "text-orange-600";
       titulo = "Investimento";
       break;
 
     case "REFERRAL_BONUS":
-      icon = <FaCoins size={24} className="text-green-600" />;
+      icon = <FaCoins size={26} className="text-green-600" />;
       cor = "text-green-600";
       titulo = "Bónus de Referido";
       break;
 
     default:
-      icon = <FaCoins size={24} className="text-gray-600" />;
+      icon = <FaCoins size={26} className="text-gray-600" />;
       cor = "text-gray-600";
       titulo = item.type || "Registo";
   }
 
   return (
-    <div className="bg-white p-5 rounded-3xl shadow-lg border border-slate-200 hover:shadow-2xl hover:scale-[1.01] transition-all flex justify-between items-center gap-3">
+    <div className="bg-white p-5 rounded-3xl shadow-lg border border-slate-200 hover:shadow-2xl hover:scale-[1.01] transition-all flex justify-between items-center gap-4">
 
       <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shadow-inner">
+        <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center shadow-inner">
           {icon}
         </div>
 
         <div>
-          <p className="text-base font-extrabold text-gray-900">
+          <p className="text-lg font-extrabold text-gray-900">
             {titulo}
           </p>
 
-          <p className="text-xs text-gray-500 mt-0.5 capitalize">
+          <p className="text-xs text-gray-500 mt-1 capitalize">
             Status: {item.status || "—"}
           </p>
 
@@ -135,7 +136,7 @@ function HistoricoItem({ item }: { item: Transaction }) {
         </div>
       </div>
 
-      <p className={`text-lg font-extrabold ${cor} whitespace-nowrap`}>
+      <p className={`text-xl font-extrabold ${cor} whitespace-nowrap`}>
         {Number(item.amount).toLocaleString()} Kz
       </p>
     </div>

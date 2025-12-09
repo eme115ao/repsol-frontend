@@ -70,7 +70,8 @@ export default function Levantamento() {
       const valorOriginal = valorNum;
       const valorComDesconto = Number((valorOriginal * 0.86).toFixed(2));
 
-      await apiPost("/transaction/withdraw", {
+      // CORREÇÃO AQUI — ROTA CERTA DO BACKEND
+      await apiPost("/transactions/withdraw", {
         bancoId: selected,
         amount: valorComDesconto,
         valorOriginal,

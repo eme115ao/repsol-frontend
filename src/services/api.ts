@@ -1,7 +1,8 @@
+// src/services/api.ts
 import axios from "axios";
 
 // ============================================================
-// BASE URL — vem do .env, sem adicionar /api
+// BASE URL — definida no .env (SEM adicionar /api no código)
 // ============================================================
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -22,7 +23,7 @@ function extractError(err: any): string {
 }
 
 // ============================================================
-// Adicionar TOKEN
+// TOKEN
 // ============================================================
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
@@ -98,12 +99,14 @@ export const endpoints = {
   products: "/products",
   productId: (id: string | number) => `/products/${id}`,
 
-  investments: "/investment",
-  invest: "/investment",
+  investments: "/investments",
+  invest: "/investments",
 
-  deposit: "/transaction/deposit",
-  withdraw: "/transaction/withdraw",
-  allTransactions: "/transaction",
+  deposit: "/transactions/deposit",
+  withdraw: "/transactions/withdraw",
+
+  // CORRIGIDO DEFINITIVO
+  allTransactions: "/transactions",
 
   empresaBancos: "/banco/empresa",
 
