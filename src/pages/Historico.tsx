@@ -1,4 +1,3 @@
-// src/pages/Historico.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 import {
@@ -26,7 +25,8 @@ export default function Historico() {
 
   async function carregar() {
     try {
-      const data = await apiGet<Transaction[]>("/transactions");
+      // ROTA CORRETA DO BACKEND
+      const data = await apiGet<Transaction[]>("/transactions/");
 
       const lista = Array.isArray(data)
         ? [...data].sort(
@@ -47,7 +47,6 @@ export default function Historico() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
 
-      {/* TÍTULO PROFISSIONAL */}
       <h1 className="text-3xl font-extrabold text-center mb-8 text-gray-900 tracking-tight">
         Histórico Geral
       </h1>
@@ -115,7 +114,6 @@ function HistoricoItem({ item }: { item: Transaction }) {
   return (
     <div className="bg-white p-5 rounded-3xl shadow-lg border border-slate-200 hover:shadow-2xl hover:scale-[1.01] transition-all flex justify-between items-center gap-3">
 
-      {/* ESQUERDA */}
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shadow-inner">
           {icon}
@@ -137,7 +135,6 @@ function HistoricoItem({ item }: { item: Transaction }) {
         </div>
       </div>
 
-      {/* VALOR */}
       <p className={`text-lg font-extrabold ${cor} whitespace-nowrap`}>
         {Number(item.amount).toLocaleString()} Kz
       </p>

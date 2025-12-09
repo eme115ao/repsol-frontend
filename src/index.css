@@ -1,7 +1,35 @@
+/* Tailwind layers obrigatórios */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Altura total */
 html, body, #root {
   height: 100%;
+}
+
+/* PADRÃO APLICATIVO BANCÁRIO */
+body {
+  background-color: #f8fafc; /* cinza claro */
+  color: #0f172a; /* cinza profundo */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Imagens não arrastáveis */
+img {
+  user-select: none;
+}
+
+/* ================================================================== */
+/* COMPONENTES PERSONALIZADOS — DEVEM FICAR DENTRO DE LAYER           */
+/* ================================================================== */
+@layer components {
+  .card {
+    @apply bg-white rounded-3xl shadow-xl border border-slate-200 p-4;
+  }
+
+  .btn-primary {
+    @apply bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-5 
+           rounded-2xl shadow active:scale-95 transition-all;
+  }
 }

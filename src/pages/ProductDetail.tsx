@@ -7,7 +7,7 @@ interface Product {
   id: number;
   nome: string;
   valorMinimo: number;
-  rendimentoDia: number; // CORRETO
+  rendimentoDia: number;
   duracaoDias: number;
   imagem: string | null;
 }
@@ -24,13 +24,11 @@ export default function ProductDetail() {
     (async () => {
       try {
         const res = await apiGet<any>(`/products/${id}`);
-
-        // BACKEND retorna direto o objeto, sem "product"
         const p = res.product || res;
 
         setProduct({
           ...p,
-          rendimentoDia: Number(p.rendimentoDia), // garantir número
+          rendimentoDia: Number(p.rendimentoDia),
         });
       } catch (err) {
         console.error("Erro ao carregar produto:", err);
@@ -42,8 +40,7 @@ export default function ProductDetail() {
 
   function resolveImage(img?: string | null) {
     if (!img) return "/assets/placeholder.png";
-    if (!img.startsWith("/assets/")) return `/assets/${img}`;
-    return img;
+    return `/assets/${img}`;
   }
 
   async function handleBuy() {
@@ -72,10 +69,9 @@ export default function ProductDetail() {
     }
   }
 
-  // ---------- UI DE CARREGAMENTO rápido, sem tela branca -----------
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 text-sm">
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
         Atualizando produto...
       </div>
     );
@@ -89,14 +85,14 @@ export default function ProductDetail() {
     );
   }
 
-  // Cálculo CORRETO do backend (rendimentoDia é valor fixo KZ)
-  const rendimentoReal = Number(product.rendimentoDia) || 0;
-
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">{product.nome}</h1>
+    <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-6 max-w-md mx-auto">
+      <h1 className="text-3xl font-extrabold mb-6 text-gray-900 tracking-tight">
+        {product.nome}
+      </h1>
 
-      <div className="w-full h-48 rounded-2xl bg-white shadow border border-slate-200 mb-4 overflow-hidden">
+      {/* IMAGEM GRANDE */}
+      <div className="w-full h-60 rounded-3xl bg-white shadow border border-slate-200 mb-6 overflow-hidden flex items-center justify-center">
         <img
           src={resolveImage(product.imagem)}
           alt={product.nome}
@@ -104,26 +100,35 @@ export default function ProductDetail() {
         />
       </div>
 
-      <div className="bg-white rounded-2xl shadow p-6 border border-slate-100 space-y-3">
-        <p className="text-gray-700">
+      {/* CARD DETALHES */}
+      <div className="card p-6 space-y-4">
+        <p className="text-gray-700 text-lg">
           Preço mínimo:{" "}
-          <strong>{product.valorMinimo.toLocaleString()} Kz</strong>
+          <span className="font-bold text-gray-900">
+            {product.valorMinimo.toLocaleString()} Kz
+          </span>
         </p>
 
-        <p className="text-gray-700">
-          Rendimento diário real:{" "}
-          <strong>{rendimentoReal.toLocaleString()} Kz</strong>
+        <p className="text-gray-700 text-lg">
+          Rendimento diário:{" "}
+          <span className="font-bold text-green-700">
+            {product.rendimentoDia.toLocaleString()} Kz
+          </span>
         </p>
 
-        <p className="text-gray-700">
-          Duração: <strong>{product.duracaoDias} dias</strong>
+        <p className="text-gray-700 text-lg">
+          Duração:{" "}
+          <span className="font-bold text-gray-900">
+            {product.duracaoDias} dias
+          </span>
         </p>
       </div>
 
+      {/* BOTÃO */}
       <button
         onClick={handleBuy}
         disabled={processing}
-        className="mt-6 w-full bg-orange-500 text-white font-semibold py-3 rounded-xl shadow hover:bg-orange-600 transition disabled:bg-gray-400"
+        className="btn-primary w-full mt-6"
       >
         {processing ? "Processando..." : "Comprar agora"}
       </button>

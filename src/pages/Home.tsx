@@ -17,19 +17,19 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50 pb-28">
 
       {/* CABEÇALHO */}
-      <header className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-5 shadow">
+      <header className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-6 shadow-lg">
         <div className="max-w-md mx-auto px-4 flex flex-col items-center">
-          <h1 className="text-3xl font-extrabold tracking-wide drop-shadow">
+          <h1 className="text-3xl font-extrabold tracking-wide">
             REPSOL S.A
           </h1>
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 pt-5 space-y-8">
+      <main className="max-w-md mx-auto px-4 pt-6 space-y-10">
 
         {/* FAIXA INVITE */}
         <section className="bg-green-50 border border-green-200 rounded-3xl px-4 py-4 flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white">
+          <div className="w-11 h-11 rounded-full bg-green-500 flex items-center justify-center text-white shadow">
             <FaWhatsapp size={22} />
           </div>
 
@@ -47,61 +47,66 @@ export default function Home() {
           </Link>
         </section>
 
-        {/* MENU — Agora são 6 itens, preenchendo o espaço corretamente */}
+        {/* MENU – 6 BOTÕES */}
         <section>
-          <div className="grid grid-cols-3 gap-5 text-center">
+          <div className="grid grid-cols-3 gap-6 text-center">
 
+            {/* RECARREGAR */}
             <Link to="/deposito" className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center shadow">
+              <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center shadow-md">
                 <MdOutlineSavings className="text-orange-600" size={30} />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-800">
                 Recarregar
               </span>
             </Link>
 
+            {/* RETIRAR */}
             <Link to="/levantamento" className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center shadow">
+              <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center shadow-md">
                 <FaMoneyBillWave className="text-blue-600" size={28} />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-800">
                 Retirar
               </span>
             </Link>
 
+            {/* REGRAS */}
             <Link to="/regras" className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-2xl bg-sky-100 flex items-center justify-center shadow">
+              <div className="w-16 h-16 rounded-2xl bg-sky-100 flex items-center justify-center shadow-md">
                 <MdOutlineRule className="text-sky-600" size={28} />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-800">
                 Regras
               </span>
             </Link>
 
+            {/* MINHA LOJA */}
             <Link to="/loja" className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center shadow">
+              <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center shadow-md">
                 <FaStore className="text-amber-600" size={28} />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-800">
                 Minha Loja
               </span>
             </Link>
 
+            {/* CONVIDAR */}
             <Link to="/convidar" className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center shadow">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center shadow-md">
                 <FaUserFriends className="text-indigo-600" size={28} />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-800">
                 Convidar
               </span>
             </Link>
 
-            {/* NOVO BOTÃO — HISTÓRICO */}
+            {/* HISTÓRICO */}
             <Link to="/historico" className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center shadow">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center shadow-md">
                 <FaHistory className="text-gray-700" size={28} />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-800">
                 Histórico
               </span>
             </Link>
@@ -114,7 +119,7 @@ export default function Home() {
           <img
             src={bannerUrl}
             alt="Banner Repsol"
-            className="rounded-3xl w-full shadow-lg border border-slate-200"
+            className="rounded-3xl w-full shadow-xl border border-slate-200"
           />
         </section>
 

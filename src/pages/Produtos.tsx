@@ -1,3 +1,4 @@
+// src/pages/Produtos.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 import { Link } from "react-router-dom";
@@ -10,7 +11,6 @@ interface ProductRaw {
   rendimentoDia?: number;
   duracaoDias: number;
   imagem: string | null;
-  [k: string]: any;
 }
 
 export default function Produtos() {
@@ -60,15 +60,12 @@ export default function Produtos() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 pt-8 px-4">
-
-      {/* TÍTULO PRINCIPAL */}
+    <div className="min-h-screen bg-slate-50 pb-24 pt-6 px-4">
       <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-900 tracking-tight">
         Produtos
       </h1>
 
-      {/* LISTA DE PRODUTOS */}
-      <div className="max-w-xl mx-auto space-y-10">
+      <div className="max-w-md mx-auto space-y-10">
         {products.map((p) => {
           const rendimentoDiario = getRendimentoDiario(p);
 
@@ -76,72 +73,60 @@ export default function Produtos() {
             <div
               key={p.id}
               className="
-                bg-white rounded-3xl p-6 flex gap-6 items-center 
-                border border-slate-200 shadow-xl 
-                hover:shadow-[0_14px_30px_rgba(0,0,0,0.15)]
-                hover:scale-[1.02]
+                card p-6 flex gap-6
+                hover:scale-[1.01] hover:shadow-2xl
                 transition-all duration-300 ease-out
               "
             >
-              {/* IMAGEM MUITO MAIOR */}
-              <div
-                className="
-                  w-32 h-32 rounded-2xl bg-orange-50 overflow-hidden 
-                  border-4 border-orange-300 flex items-center justify-center shadow-inner
-                "
-              >
+              {/* IMAGEM REALISTA GRANDE */}
+              <div className="w-32 h-32 rounded-xl overflow-hidden">
                 <img
                   src={resolveImage(p.imagem)}
                   alt={p.nome}
-                  className="w-full h-full object-contain p-1"
+                  className="w-full h-full object-contain"
                 />
               </div>
 
-              {/* INFORMAÇÕES */}
-              <div className="flex-1">
-                <p className="text-xl font-bold text-gray-900 leading-tight">
-                  {p.nome}
-                </p>
+              {/* COLUNA DE TEXTO */}
+              <div className="flex-1 flex flex-col justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {p.nome}
+                  </p>
 
-                <p className="text-sm text-gray-700 mt-2">
-                  Mínimo:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {p.valorMinimo.toLocaleString()} Kz
-                  </span>
-                </p>
+                  <p className="text-base text-gray-700 mt-3">
+                    Preço mínimo:{" "}
+                    <span className="font-bold text-gray-900">
+                      {p.valorMinimo.toLocaleString()} Kz
+                    </span>
+                  </p>
 
-                <p className="text-sm text-gray-700">
-                  Rendimento diário:{" "}
-                  <span className="font-semibold text-green-700">
-                    {rendimentoDiario.toLocaleString()} Kz
-                  </span>
-                </p>
+                  <p className="text-base text-gray-700">
+                    Renda diária:{" "}
+                    <span className="font-bold text-green-700">
+                      {rendimentoDiario.toLocaleString()} Kz
+                    </span>
+                  </p>
 
-                <p className="text-sm text-gray-700">
-                  Duração:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {p.duracaoDias} dias
-                  </span>
-                </p>
+                  <p className="text-base text-gray-700">
+                    Duração:{" "}
+                    <span className="font-bold text-gray-900">
+                      {p.duracaoDias} dias
+                    </span>
+                  </p>
+                </div>
+
+                <Link
+                  to={`/produto/${p.id}`}
+                  className="btn-primary text-center mt-4"
+                >
+                  Comprar
+                </Link>
               </div>
-
-              {/* BOTÃO */}
-              <Link
-                to={`/produto/${p.id}`}
-                className="
-                  bg-orange-500 hover:bg-orange-600 
-                  text-white font-bold px-6 py-3 
-                  rounded-2xl shadow active:scale-95 
-                  transition-all duration-200 whitespace-nowrap
-                "
-              >
-                Comprar
-              </Link>
             </div>
           );
         })}
 
-        {/* NENHUM PRODUTO */}
         {products.length === 0 && (
           <p className="text-center text-gray-500 text-sm">
             Nenhum produto disponível
