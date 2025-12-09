@@ -8,7 +8,6 @@ import WhatsAppMenuButton from "./WhatsAppMenuButton";
 export default function AppLayout() {
   const loc = useLocation();
 
-  // Corrige rotas com hash e remove parâmetros
   let current = loc.hash.startsWith("#/")
     ? loc.hash.replace("#", "")
     : loc.pathname;
@@ -21,50 +20,30 @@ export default function AppLayout() {
     "/produtos": "Produtos",
     "/loja": "Minha Loja",
     "/deposito": "Depósito",
-    "/deposito/confirmar": "Confirmar Depósito",
-    "/deposito/sucesso": "Depósito Sucesso",
     "/levantamento": "Levantamento",
-    "/levantamento/sucesso": "Levantamento Sucesso",
     "/historico": "Histórico",
-    "/meubanco": "Meu Banco",
     "/regras": "Regras",
-    "/convidar": "Convidar",
     "/equipa": "Equipa",
     "/minha": "Minha Conta",
   };
 
-  const hideNavPrefixes = [
-    "/produto/",
-    "/deposito/confirmar",
-    "/admin",
-    "/admin/dashboard",
-    "/admin/transacoes",
-  ];
+  const hideNavPrefixes = ["/produto/", "/deposito/confirmar", "/admin"];
 
-  const shouldHide = hideNavPrefixes.some((prefix) =>
-    current.startsWith(prefix)
-  );
+  const shouldHide = hideNavPrefixes.some((p) => current.startsWith(p));
 
   let title = titles[current] || "";
   if (current.startsWith("/produto/")) title = "Detalhes do Produto";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col relative pb-20 pb-safe">
-      {/* Navbar */}
+    <div className="min-h-screen bg-slate-50 flex flex-col relative">
       {!shouldHide && <Navbar title={title} />}
 
-      {/* Conteúdo */}
-      <main className="flex-1 w-full max-w-md mx-auto px-2 mb-safe">
+      <main className="flex-1 w-full max-w-md mx-auto pb-24">
         <Outlet />
       </main>
 
-      {/* Rodapé + WhatsApp */}
-      {!shouldHide && (
-        <>
-          <BottomNav />
-          <WhatsAppMenuButton />
-        </>
-      )}
+      {!shouldHide && <BottomNav />}
+      {!shouldHide && <WhatsAppMenuButton />}
     </div>
   );
 }

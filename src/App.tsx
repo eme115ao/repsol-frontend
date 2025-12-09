@@ -24,6 +24,9 @@ import DepositoSucesso from "./pages/DepositoSucesso";
 import Levantamento from "./pages/Levantamento";
 import LevantamentoSucesso from "./pages/LevantamentoSucesso";
 
+/* Compra Sucesso — NOVO */
+import CompraSucesso from "./pages/CompraSucesso";
+
 /* Outros */
 import Historico from "./pages/Historico";
 import MeuBanco from "./pages/MeuBanco";
@@ -59,6 +62,9 @@ export default function App() {
           <Route path="/produto/:id" element={<ProductDetail />} />
 
           <Route path="/loja" element={<Loja />} />
+
+          {/* Compra — NOVA ROTA */}
+          <Route path="/compra/sucesso" element={<CompraSucesso />} />
 
           <Route path="/deposito" element={<Deposito />} />
           <Route path="/deposito/confirmar" element={<ConfirmarDeposito />} />

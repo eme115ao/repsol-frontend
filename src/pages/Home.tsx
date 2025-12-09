@@ -6,7 +6,7 @@ import {
   FaMoneyBillWave,
   FaStore,
   FaUserFriends,
-  FaHistory
+  FaHistory,
 } from "react-icons/fa";
 import { MdOutlineSavings, MdOutlineRule } from "react-icons/md";
 
@@ -14,14 +14,11 @@ export default function Home() {
   const bannerUrl = new URL("/src/assets/banner2.png", import.meta.url).href;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-28">
-
-      {/* CABEÇALHO */}
+    <div className="min-h-screen bg-slate-50 pb-32"> 
+      {/* HEADER */}
       <header className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-6 shadow-lg">
         <div className="max-w-md mx-auto px-4 flex flex-col items-center">
-          <h1 className="text-3xl font-extrabold tracking-wide">
-            REPSOL S.A
-          </h1>
+          <h1 className="text-3xl font-extrabold tracking-wide">REPSOL S.A</h1>
         </div>
       </header>
 
@@ -35,7 +32,7 @@ export default function Home() {
 
           <div className="flex-1">
             <p className="text-sm font-semibold text-gray-800 leading-tight">
-              Convide seus amigos para ganhar comissões
+              Convide amigos e ganhe comissões
             </p>
           </div>
 
@@ -119,10 +116,9 @@ export default function Home() {
           <img
             src={bannerUrl}
             alt="Banner Repsol"
-            className="rounded-3xl w-full shadow-xl border border-slate-200"
+            className="rounded-3xl w-full shadow-xl border border-slate-200 object-cover"
           />
         </section>
-
       </main>
     </div>
   );

@@ -54,15 +54,18 @@ export default function ProductDetail() {
         amount: product.valorMinimo,
       });
 
-      alert("Compra realizada com sucesso!");
-      navigate("/loja");
+      // NOVO — página bonita
+      navigate("/compra/sucesso");
+      return;
+
     } catch (err: any) {
       const msg = err?.message || "";
+
       if (msg.includes("Saldo insuficiente")) {
-        alert("Saldo insuficiente! Faça um depósito.");
         navigate("/deposito");
         return;
       }
+
       alert(msg || "Erro ao processar compra.");
     } finally {
       setProcessing(false);
@@ -100,7 +103,7 @@ export default function ProductDetail() {
         />
       </div>
 
-      {/* CARD DETALHES */}
+      {/* DETALHES */}
       <div className="card p-6 space-y-4">
         <p className="text-gray-700 text-lg">
           Preço mínimo:{" "}
