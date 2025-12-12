@@ -1,6 +1,6 @@
 // src/pages/Convidar.tsx
 import React, { useEffect, useState } from "react";
-import { apiGet } from "../services/api";
+import { getInviteCode } from "../api/referral";
 import { FaWhatsapp, FaCopy, FaUsers } from "react-icons/fa";
 
 export default function Convidar() {
@@ -10,19 +10,12 @@ export default function Convidar() {
   const inviteURL = `${window.location.origin}/#/register?ref=${inviteCode}`;
 
   useEffect(() => {
-    carregarCodigo();
+    load();
   }, []);
 
-  async function carregarCodigo() {
-    try {
-      const res = await apiGet("/referral/invite-code");
-
-      if (res && res.inviteCode) {
-        setInviteCode(res.inviteCode);
-      }
-    } catch (e) {
-      console.error("Erro ao carregar código:", e);
-    }
+  async function load() {
+    const code = await getInviteCode();
+    setInviteCode(code);
   }
 
   function copyLink() {
@@ -44,7 +37,6 @@ export default function Convidar() {
         Convidar Amigos
       </h1>
 
-      {/* CARD PRINCIPAL */}
       <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 space-y-5">
 
         <div className="flex items-center gap-3">
@@ -54,7 +46,6 @@ export default function Convidar() {
           </p>
         </div>
 
-        {/* CÓDIGO */}
         <div>
           <p className="text-sm text-gray-600 mb-1">Seu código de convite:</p>
           <div className="bg-slate-100 rounded-xl px-4 py-3 text-center font-bold text-gray-900 text-lg border">
@@ -62,7 +53,6 @@ export default function Convidar() {
           </div>
         </div>
 
-        {/* LINK */}
         <div>
           <p className="text-sm text-gray-600 mb-1">Link de referência:</p>
 
@@ -88,7 +78,6 @@ export default function Convidar() {
           )}
         </div>
 
-        {/* WHATSAPP */}
         <button
           onClick={sendToWhatsApp}
           className="w-full mt-3 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-lg text-lg active:scale-95 transition flex items-center justify-center gap-2"

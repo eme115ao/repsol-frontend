@@ -1,9 +1,9 @@
 // src/services/api.ts
 import axios from "axios";
 
-// ============================================================
+// ==============================================================
 // BASE URL — definida no .env (SEM adicionar /api no código)
-// ============================================================
+// ==============================================================
 const API_URL = import.meta.env.VITE_API_URL;
 
 // Instância Axios
@@ -12,9 +12,9 @@ export const api = axios.create({
   timeout: 20000,
 });
 
-// ============================================================
-// Extrair mensagens de erro
-// ============================================================
+// ==============================================================
+// Extrair mensagens de erro — SEM quebrar o React (sem throw)
+// ==============================================================
 function extractError(err: any): string {
   if (err?.response?.data?.error) return err.response.data.error;
   if (err?.response?.data?.message) return err.response.data.message;
@@ -22,53 +22,56 @@ function extractError(err: any): string {
   return "Erro inesperado na requisição";
 }
 
-// ============================================================
+// ==============================================================
 // TOKEN
-// ============================================================
+// ==============================================================
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// ============================================================
-// GET
-// ============================================================
+// ==============================================================
+// GET — sem throw: sempre retorna objeto seguro
+// ==============================================================
 export async function apiGet<T = any>(url: string): Promise<T> {
   try {
     const res = await api.get<T>(url, { headers: getAuthHeaders() });
     return res.data;
   } catch (err) {
-    throw new Error(extractError(err));
+    console.error("API GET ERROR:", extractError(err));
+    return {} as T;
   }
 }
 
-// ============================================================
-// POST
-// ============================================================
+// ==============================================================
+// POST — sem throw
+// ==============================================================
 export async function apiPost<T = any>(url: string, body?: any): Promise<T> {
   try {
     const res = await api.post<T>(url, body, { headers: getAuthHeaders() });
     return res.data;
   } catch (err) {
-    throw new Error(extractError(err));
+    console.error("API POST ERROR:", extractError(err));
+    return {} as T;
   }
 }
 
-// ============================================================
-// PUT
-// ============================================================
+// ==============================================================
+// PUT — sem throw
+// ==============================================================
 export async function apiPut<T = any>(url: string, body?: any): Promise<T> {
   try {
     const res = await api.put<T>(url, body, { headers: getAuthHeaders() });
     return res.data;
   } catch (err) {
-    throw new Error(extractError(err));
+    console.error("API PUT ERROR:", extractError(err));
+    return {} as T;
   }
 }
 
-// ============================================================
-// UPLOAD (multipart/form-data)
-// ============================================================
+// ==============================================================
+// UPLOAD — sem throw
+// ==============================================================
 export async function apiUpload<T = any>(
   url: string,
   formData: FormData
@@ -80,16 +83,16 @@ export async function apiUpload<T = any>(
         "Content-Type": "multipart/form-data",
       },
     });
-
     return res.data;
   } catch (err) {
-    throw new Error(extractError(err));
+    console.error("API UPLOAD ERROR:", extractError(err));
+    return {} as T;
   }
 }
 
-// ============================================================
-// ENDPOINTS OFICIAIS — SEM /api
-// ============================================================
+// ==============================================================
+// ENDPOINTS — idênticos aos que teu frontend espera
+// ==============================================================
 export const endpoints = {
   login: "/auth/login",
   register: "/auth/register",
@@ -105,7 +108,6 @@ export const endpoints = {
   deposit: "/transactions/deposit",
   withdraw: "/transactions/withdraw",
 
-  // CORRIGIDO DEFINITIVO
   allTransactions: "/transactions",
 
   empresaBancos: "/banco/empresa",

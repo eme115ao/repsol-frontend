@@ -2,28 +2,23 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { apiGet } from "../services/api";
-
-interface LevelUser {
-  id: number;
-  phone: string;
-  createdAt: string;
-}
-
-interface StatsResponse {
-  commissionsToday: number;
-  commissionsYesterday: number;
-  totalCommissions: number;
-}
+import {
+  getInviteCode,
+  getInviteCount,
+  getTeamLevel1,
+  getTeamLevel2,
+  getReferralStats
+} from "../api/referral";
 
 export default function Equipa() {
   const navigate = useNavigate();
 
   const [inviteCode, setInviteCode] = useState("");
   const [inviteCount, setInviteCount] = useState(0);
-  const [level1, setLevel1] = useState<LevelUser[]>([]);
+  const [level1Count, setLevel1Count] = useState(0);
+  const [level2Count, setLevel2Count] = useState(0);
 
-  const [stats, setStats] = useState<StatsResponse>({
+  const [stats, setStats] = useState({
     commissionsToday: 0,
     commissionsYesterday: 0,
     totalCommissions: 0
@@ -36,21 +31,35 @@ export default function Equipa() {
   useEffect(() => {
     async function load() {
       try {
-        const codeRes = await apiGet("/referral/invite-code");
-        setInviteCode(codeRes.inviteCode || "");
+        // Código do convite
+        const code = await getInviteCode();
+        setInviteCode(code);
 
-        const countRes = await apiGet("/referral/invite-count");
-        setInviteCount(countRes.total || 0);
+        // Total de convidados nível 1
+        const total = await getInviteCount();
+        setInviteCount(total);
 
-        const listRes = await apiGet("/referral/");
-        setLevel1(Array.isArray(listRes) ? listRes : []);
+        // Nível 1
+        const l1 = await getTeamLevel1();
+        setLevel1Count(Array.isArray(l1) ? l1.length : 0);
 
-        const statsRes = await apiGet("/referral/stats");
-        setStats(statsRes);
+        // Nível 2
+        const l2 = await getTeamLevel2();
+        setLevel2Count(Array.isArray(l2) ? l2.length : 0);
+
+        // Comissões
+        const s = await getReferralStats();
+        setStats({
+          commissionsToday: s.commissionsToday ?? 0,
+          commissionsYesterday: s.commissionsYesterday ?? 0,
+          totalCommissions: s.totalCommissions ?? 0
+        });
+
       } catch (err) {
-        console.error("Erro carregando equipa:", err);
+        console.error("Erro Equipa:", err);
       }
     }
+
     load();
   }, []);
 
@@ -63,7 +72,6 @@ export default function Equipa() {
   return (
     <div className="min-h-screen bg-slate-50 pb-28">
 
-      {/* HEADER */}
       <header className="bg-white p-4 shadow-sm flex items-center gap-3 sticky top-0 z-20 border-b border-slate-200">
         <ArrowLeft
           size={22}
@@ -101,7 +109,7 @@ export default function Equipa() {
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-center shadow-sm">
             <p className="text-sm text-orange-700 font-medium">Total de Membros</p>
             <p className="text-2xl font-bold text-orange-800 mt-1">
-              {inviteCount}
+              {inviteCount + level2Count}
             </p>
           </div>
         </div>
@@ -137,13 +145,18 @@ export default function Equipa() {
           )}
         </div>
 
-        {/* NÍVEL 1 */}
+        {/* NÍVEL 1 + NÍVEL 2 */}
         <div className="bg-white border shadow-sm rounded-xl p-5 mt-6">
           <h3 className="text-lg font-semibold text-slate-800 mb-4">
             Tamanho da Equipa
           </h3>
+
           <p className="text-gray-700 text-sm">
-            Agente Nível 1: <strong>{level1.length} pessoas</strong>
+            Agente Nível 1: <strong>{level1Count} pessoas</strong>
+          </p>
+
+          <p className="text-gray-700 text-sm mt-1">
+            Agente Nível 2: <strong>{level2Count} pessoas</strong>
           </p>
         </div>
 
