@@ -1,4 +1,3 @@
-// src/pages/Produtos.tsx
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
 import { Link } from "react-router-dom";
@@ -60,12 +59,12 @@ export default function Produtos() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 pt-6 px-4">
-      <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-900 tracking-tight">
+    <div className="min-h-screen bg-slate-50 pb-24 pt-6">
+      <h1 className="text-4xl font-extrabold text-center mb-6 text-gray-900 tracking-tight">
         Produtos
       </h1>
 
-      <div className="max-w-md mx-auto space-y-10">
+      <div className="max-w-md mx-auto space-y-6 px-4">
         {products.map((p) => {
           const rendimentoDiario = getRendimentoDiario(p);
 
@@ -73,42 +72,41 @@ export default function Produtos() {
             <div
               key={p.id}
               className="
-                card p-6 flex gap-6
-                hover:scale-[1.01] hover:shadow-2xl
-                transition-all duration-300 ease-out
+                bg-white rounded-2xl shadow-md border border-slate-200
+                p-4 flex items-center gap-4
+                hover:shadow-xl hover:scale-[1.01]
+                transition-all duration-300
               "
             >
-              {/* IMAGEM REALISTA GRANDE */}
-              <div className="w-32 h-32 rounded-xl overflow-hidden">
+              {/* IMAGEM — CENTRALIZADA E UM POUCO MENOR */}
+              <div className="w-24 h-24 flex items-center justify-center">
                 <img
                   src={resolveImage(p.imagem)}
                   alt={p.nome}
-                  className="w-full h-full object-contain"
+                  className="w-[90%] h-[90%] object-contain"
                 />
               </div>
 
               {/* COLUNA DE TEXTO */}
-              <div className="flex-1 flex flex-col justify-between">
+              <div className="flex-1 flex flex-col justify-between h-full">
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {p.nome}
-                  </p>
+                  <p className="text-xl font-bold text-gray-900">{p.nome}</p>
 
-                  <p className="text-base text-gray-700 mt-3">
+                  <p className="text-sm text-gray-700 mt-1">
                     Preço mínimo:{" "}
                     <span className="font-bold text-gray-900">
                       {p.valorMinimo.toLocaleString()} Kz
                     </span>
                   </p>
 
-                  <p className="text-base text-gray-700">
+                  <p className="text-sm text-gray-700">
                     Renda diária:{" "}
                     <span className="font-bold text-green-700">
                       {rendimentoDiario.toLocaleString()} Kz
                     </span>
                   </p>
 
-                  <p className="text-base text-gray-700">
+                  <p className="text-sm text-gray-700">
                     Duração:{" "}
                     <span className="font-bold text-gray-900">
                       {p.duracaoDias} dias
@@ -118,7 +116,10 @@ export default function Produtos() {
 
                 <Link
                   to={`/produto/${p.id}`}
-                  className="btn-primary text-center mt-4"
+                  className="
+                    mt-3 bg-orange-600 text-white text-center py-1.5 rounded-lg
+                    font-semibold active:scale-95 transition
+                  "
                 >
                   Comprar
                 </Link>
