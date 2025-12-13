@@ -13,16 +13,6 @@ export const api = axios.create({
 });
 
 // ==============================================================
-// Extrair mensagens de erro — SEM quebrar o React (sem throw)
-// ==============================================================
-function extractError(err: any): string {
-  if (err?.response?.data?.error) return err.response.data.error;
-  if (err?.response?.data?.message) return err.response.data.message;
-  if (typeof err?.response?.data === "string") return err.response.data;
-  return "Erro inesperado na requisição";
-}
-
-// ==============================================================
 // TOKEN
 // ==============================================================
 function getAuthHeaders() {
@@ -31,46 +21,65 @@ function getAuthHeaders() {
 }
 
 // ==============================================================
-// GET — sem throw: sempre retorna objeto seguro
+// GET — sempre retorna dados ou {}
 // ==============================================================
 export async function apiGet<T = any>(url: string): Promise<T> {
   try {
     const res = await api.get<T>(url, { headers: getAuthHeaders() });
     return res.data;
-  } catch (err) {
-    console.error("API GET ERROR:", extractError(err));
+  } catch (err: any) {
+    console.error("API GET ERROR:", err?.response?.data);
     return {} as T;
   }
 }
 
 // ==============================================================
-// POST — sem throw
+// POST — retorna dados OU { errorCode, message }
 // ==============================================================
 export async function apiPost<T = any>(url: string, body?: any): Promise<T> {
   try {
     const res = await api.post<T>(url, body, { headers: getAuthHeaders() });
     return res.data;
-  } catch (err) {
-    console.error("API POST ERROR:", extractError(err));
+  } catch (err: any) {
+    const data = err?.response?.data;
+
+    // 🔑 Padronização de erro
+    if (data?.errorCode) {
+      return {
+        errorCode: data.errorCode,
+        message: data.message,
+      } as T;
+    }
+
+    console.error("API POST ERROR:", data);
     return {} as T;
   }
 }
 
 // ==============================================================
-// PUT — sem throw
+// PUT — mesmo padrão do POST
 // ==============================================================
 export async function apiPut<T = any>(url: string, body?: any): Promise<T> {
   try {
     const res = await api.put<T>(url, body, { headers: getAuthHeaders() });
     return res.data;
-  } catch (err) {
-    console.error("API PUT ERROR:", extractError(err));
+  } catch (err: any) {
+    const data = err?.response?.data;
+
+    if (data?.errorCode) {
+      return {
+        errorCode: data.errorCode,
+        message: data.message,
+      } as T;
+    }
+
+    console.error("API PUT ERROR:", data);
     return {} as T;
   }
 }
 
 // ==============================================================
-// UPLOAD — sem throw
+// UPLOAD — mantém padrão
 // ==============================================================
 export async function apiUpload<T = any>(
   url: string,
@@ -84,14 +93,23 @@ export async function apiUpload<T = any>(
       },
     });
     return res.data;
-  } catch (err) {
-    console.error("API UPLOAD ERROR:", extractError(err));
+  } catch (err: any) {
+    const data = err?.response?.data;
+
+    if (data?.errorCode) {
+      return {
+        errorCode: data.errorCode,
+        message: data.message,
+      } as T;
+    }
+
+    console.error("API UPLOAD ERROR:", data);
     return {} as T;
   }
 }
 
 // ==============================================================
-// ENDPOINTS — idênticos aos que teu frontend espera
+// ENDPOINTS
 // ==============================================================
 export const endpoints = {
   login: "/auth/login",
@@ -103,12 +121,9 @@ export const endpoints = {
   productId: (id: string | number) => `/products/${id}`,
 
   investments: "/investments",
-  invest: "/investments",
 
   deposit: "/transactions/deposit",
   withdraw: "/transactions/withdraw",
-
-  allTransactions: "/transactions",
 
   empresaBancos: "/banco/empresa",
 
