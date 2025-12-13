@@ -65,8 +65,10 @@ export default function ProductDetail() {
       return;
     }
 
-    // ✅ Sucesso REAL
-    navigate("/compra/sucesso");
+    // ✅ Sucesso REAL — envia investmentId para a página protegida
+    navigate("/compra/sucesso", {
+      state: { investmentId: res.id },
+    });
   }
 
   if (loading) {
