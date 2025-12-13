@@ -1,12 +1,29 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+// src/pages/CompraSucesso.tsx
+import React, { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+interface LocationState {
+  investmentId?: number;
+}
 
 export default function CompraSucesso() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as LocationState | null;
+
+  // 🔒 Proteção da rota — somente após compra real
+  useEffect(() => {
+    if (!state?.investmentId) {
+      navigate("/produtos", { replace: true });
+    }
+  }, [state, navigate]);
+
+  if (!state?.investmentId) {
+    return null; // evita flicker
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6 text-center">
-
       <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border border-slate-200">
         <div className="flex justify-center mb-4">
           <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
@@ -19,7 +36,8 @@ export default function CompraSucesso() {
         </h1>
 
         <p className="text-gray-600 text-sm leading-relaxed mb-6">
-          Seu pedido foi submetido com sucesso.  
+          Seu pedido foi submetido com sucesso.
+          <br />
           A equipa Repsol irá confirmar a compra e processar o mais rápido possível.
         </p>
 

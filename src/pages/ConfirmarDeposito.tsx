@@ -1,54 +1,58 @@
-// src/pages/CompraSucesso.tsx
+// src/pages/ConfirmarDeposito.tsx
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
-interface LocationState {
-  investmentId?: number;
+interface Banco {
+  id: number;
+  nome: string;
+  titular: string;
+  conta: string;
+  iban?: string | null;
 }
 
-export default function CompraSucesso() {
+interface LocationState {
+  banco?: Banco;
+}
+
+export default function ConfirmarDeposito() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | null;
+  const banco = state?.banco;
 
-  // 🔒 Proteção da rota
+  // 🔒 Proteção correta da rota
   useEffect(() => {
-    if (!state?.investmentId) {
-      // Acesso direto ou inválido
-      navigate("/produtos", { replace: true });
+    if (!banco) {
+      toast.error("Selecione um banco primeiro");
+      navigate("/deposito", { replace: true });
     }
-  }, [state, navigate]);
+  }, [banco, navigate]);
 
-  if (!state?.investmentId) {
-    return null; // evita flicker
-  }
+  if (!banco) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6 text-center">
-      <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border border-slate-200">
-        <div className="flex justify-center mb-4">
-          <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-5xl">✓</span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-50 px-4 py-6 max-w-md mx-auto">
+      <h1 className="text-3xl font-extrabold text-center mb-6 text-gray-900">
+        Confirmar Depósito
+      </h1>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Compra Realizada!
-        </h1>
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 space-y-3">
+        <p className="text-lg font-bold text-gray-900">{banco.nome}</p>
+        <p className="text-sm text-gray-700">Titular: {banco.titular}</p>
+        <p className="text-sm font-semibold text-gray-900">{banco.conta}</p>
 
-        <p className="text-gray-600 text-sm leading-relaxed mb-6">
-          Seu pedido foi submetido com sucesso.
-          <br />
-          A equipa Repsol irá confirmar a compra e processar o mais rápido possível.
-        </p>
-
-        <button
-          onClick={() => navigate("/minha")}
-          className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-bold shadow"
-        >
-          Ir para Minha Conta
-        </button>
+        {banco.iban && (
+          <p className="text-sm text-gray-700">IBAN: {banco.iban}</p>
+        )}
       </div>
+
+      <button
+        onClick={() => navigate("/deposito/sucesso")}
+        className="mt-6 w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-bold shadow"
+      >
+        Já efetuei a transferência
+      </button>
     </div>
   );
 }
