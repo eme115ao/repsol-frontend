@@ -12,6 +12,10 @@ interface Product {
   imagem: string | null;
 }
 
+interface InvestmentResponse {
+  id: number;
+}
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -44,32 +48,25 @@ export default function ProductDetail() {
   }
 
   async function handleBuy() {
-    if (!product) return;
+    if (!product || processing) return;
 
     setProcessing(true);
 
-    try {
-      await apiPost("/investments", {
-        productId: product.id,
-        amount: product.valorMinimo,
-      });
+    const res = await apiPost<InvestmentResponse>("/investments", {
+      productId: product.id,
+      amount: product.valorMinimo,
+    });
 
-      // NOVO — página bonita
-      navigate("/compra/sucesso");
+    setProcessing(false);
+
+    // ❌ SEM id → compra NÃO ocorreu
+    if (!res || !res.id) {
+      alert("Compra não realizada. Verifique seu saldo ou o status do produto.");
       return;
-
-    } catch (err: any) {
-      const msg = err?.message || "";
-
-      if (msg.includes("Saldo insuficiente")) {
-        navigate("/deposito");
-        return;
-      }
-
-      alert(msg || "Erro ao processar compra.");
-    } finally {
-      setProcessing(false);
     }
+
+    // ✅ Sucesso REAL
+    navigate("/compra/sucesso");
   }
 
   if (loading) {
