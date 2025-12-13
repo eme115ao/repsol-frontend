@@ -1,12 +1,6 @@
-// src/pages/Historico.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiGet } from "../services/api";
-import {
-  FaArrowDown,
-  FaArrowUp,
-  FaCoins,
-  FaClock,
-} from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaCoins, FaClock } from "react-icons/fa";
 
 interface Transaction {
   id: number;
@@ -26,8 +20,7 @@ export default function Historico() {
 
   async function carregar() {
     try {
-      // ROTA DEFINITIVA DO BACKEND
-      const data = await apiGet<Transaction[]>("/transactions");
+      const data = await apiGet<Transaction[]>("/transactions/history");
 
       const lista = Array.isArray(data)
         ? [...data].sort(
@@ -39,29 +32,27 @@ export default function Historico() {
 
       setItems(lista);
       setErrorMsg("");
-    } catch (err: any) {
-      console.error("Erro histórico:", err?.message || err);
+    } catch (err) {
+      console.error("Erro histórico:", err);
       setErrorMsg("Erro ao carregar histórico.");
+      setItems([]);
     }
   }
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-4 max-w-md mx-auto">
-
-      <h1 className="text-3xl font-extrabold text-center mb-8 text-gray-900 tracking-tight">
+      <h1 className="text-3xl font-extrabold text-center mb-8">
         Histórico Geral
       </h1>
 
       {errorMsg && (
-        <p className="text-red-600 text-sm mb-3 text-center">
-          {errorMsg}
-        </p>
+        <p className="text-red-600 text-sm mb-4 text-center">{errorMsg}</p>
       )}
 
       {items.length === 0 ? (
-        <div className="text-gray-500 text-center mt-10 text-sm">
+        <p className="text-center text-gray-500">
           Nenhum registro encontrado.
-        </div>
+        </p>
       ) : (
         <div className="space-y-4">
           {items.map((item) => (
@@ -73,70 +64,48 @@ export default function Historico() {
   );
 }
 
-/* ===================================================================== */
-/* ===================== CARD PROFISSIONAL DO ITEM ====================== */
-/* ===================================================================== */
-
 function HistoricoItem({ item }: { item: Transaction }) {
-  let icon, cor, titulo;
+  let icon = <FaCoins />;
+  let cor = "text-gray-600";
+  let titulo = item.type;
 
-  switch (item.type.toUpperCase()) {
-    case "DEPOSIT":
-      icon = <FaArrowDown size={26} className="text-blue-600" />;
-      cor = "text-blue-600";
-      titulo = "Depósito";
-      break;
+  if (item.type === "DEPOSIT") {
+    icon = <FaArrowDown className="text-blue-600" />;
+    cor = "text-blue-600";
+    titulo = "Depósito";
+  }
 
-    case "WITHDRAW":
-      icon = <FaArrowUp size={26} className="text-red-600" />;
-      cor = "text-red-600";
-      titulo = "Levantamento";
-      break;
+  if (item.type === "WITHDRAW") {
+    icon = <FaArrowUp className="text-red-600" />;
+    cor = "text-red-600";
+    titulo = "Levantamento";
+  }
 
-    case "INVESTMENT":
-    case "INVESTMENT_YIELD":
-      icon = <FaCoins size={26} className="text-orange-600" />;
-      cor = "text-orange-600";
-      titulo = "Investimento";
-      break;
-
-    case "REFERRAL_BONUS":
-      icon = <FaCoins size={26} className="text-green-600" />;
-      cor = "text-green-600";
-      titulo = "Bónus de Referido";
-      break;
-
-    default:
-      icon = <FaCoins size={26} className="text-gray-600" />;
-      cor = "text-gray-600";
-      titulo = item.type || "Registo";
+  if (item.type === "INVESTMENT_YIELD") {
+    icon = <FaCoins className="text-green-600" />;
+    cor = "text-green-600";
+    titulo = "Rendimento Diário";
   }
 
   return (
-    <div className="bg-white p-5 rounded-3xl shadow-lg border border-slate-200 hover:shadow-2xl hover:scale-[1.01] transition-all flex justify-between items-center gap-4">
-
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center shadow-inner">
+    <div className="bg-white p-5 rounded-2xl shadow flex justify-between">
+      <div className="flex gap-4">
+        <div className="w-14 h-14 bg-slate-100 flex items-center justify-center rounded-xl">
           {icon}
         </div>
-
         <div>
-          <p className="text-lg font-extrabold text-gray-900">
-            {titulo}
+          <p className="font-bold">{titulo}</p>
+          <p className="text-xs text-gray-500">
+            Status: {item.status}
           </p>
-
-          <p className="text-xs text-gray-500 mt-1 capitalize">
-            Status: {item.status || "—"}
-          </p>
-
-          <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-            <FaClock size={11} />
+          <p className="text-xs text-gray-500 flex items-center gap-1">
+            <FaClock size={10} />
             {new Date(item.createdAt).toLocaleString()}
-          </div>
+          </p>
         </div>
       </div>
 
-      <p className={`text-xl font-extrabold ${cor} whitespace-nowrap`}>
+      <p className={`font-bold text-lg ${cor}`}>
         {Number(item.amount).toLocaleString()} Kz
       </p>
     </div>
