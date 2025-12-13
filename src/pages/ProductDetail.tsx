@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../services/api";
+import toast from "react-hot-toast";
 
 interface Product {
   id: number;
@@ -10,10 +11,13 @@ interface Product {
   rendimentoDia: number;
   duracaoDias: number;
   imagem: string | null;
+  bloqueado?: boolean;
 }
 
 interface InvestmentResponse {
-  id: number;
+  id?: number;
+  errorCode?: string;
+  message?: string;
 }
 
 export default function ProductDetail() {
@@ -34,8 +38,8 @@ export default function ProductDetail() {
           ...p,
           rendimentoDia: Number(p.rendimentoDia),
         });
-      } catch (err) {
-        console.error("Erro ao carregar produto:", err);
+      } catch {
+        toast.error("Erro ao carregar produto");
       } finally {
         setLoading(false);
       }
@@ -50,6 +54,11 @@ export default function ProductDetail() {
   async function handleBuy() {
     if (!product || processing) return;
 
+    if (product.bloqueado) {
+      toast("Brevemente disponível ⏳", { icon: "🔒" });
+      return;
+    }
+
     setProcessing(true);
 
     const res = await apiPost<InvestmentResponse>("/investments", {
@@ -59,13 +68,28 @@ export default function ProductDetail() {
 
     setProcessing(false);
 
-    // ❌ SEM id → compra NÃO ocorreu
     if (!res || !res.id) {
-      alert("Compra não realizada. Verifique seu saldo ou o status do produto.");
-      return;
+      switch (res?.errorCode) {
+        case "INSUFFICIENT_BALANCE":
+          toast.error("Saldo insuficiente");
+          navigate("/deposito");
+          return;
+
+        case "PRODUCT_LIMIT_REACHED":
+          toast("Limite atingido para este produto", { icon: "⚠️" });
+          return;
+
+        case "PRODUCT_BLOCKED":
+          toast("Brevemente disponível ⏳", { icon: "🔒" });
+          return;
+
+        default:
+          toast.error("Compra não realizada");
+          return;
+      }
     }
 
-    // ✅ Sucesso REAL — envia investmentId para a página protegida
+    toast.success("Compra realizada com sucesso!");
     navigate("/compra/sucesso", {
       state: { investmentId: res.id },
     });
@@ -87,14 +111,20 @@ export default function ProductDetail() {
     );
   }
 
+  const disabled = processing || product.bloqueado;
+
   return (
     <div className="min-h-screen bg-slate-50 pb-24 px-4 pt-6 max-w-md mx-auto">
       <h1 className="text-3xl font-extrabold mb-6 text-gray-900 tracking-tight">
         {product.nome}
       </h1>
 
-      {/* IMAGEM GRANDE */}
-      <div className="w-full h-60 rounded-3xl bg-white shadow border border-slate-200 mb-6 overflow-hidden flex items-center justify-center">
+      <div className="w-full h-60 rounded-3xl bg-white shadow border border-slate-200 mb-6 overflow-hidden flex items-center justify-center relative">
+        {product.bloqueado && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">
+            Indisponível
+          </div>
+        )}
         <img
           src={resolveImage(product.imagem)}
           alt={product.nome}
@@ -102,7 +132,6 @@ export default function ProductDetail() {
         />
       </div>
 
-      {/* DETALHES */}
       <div className="card p-6 space-y-4">
         <p className="text-gray-700 text-lg">
           Preço mínimo:{" "}
@@ -126,13 +155,21 @@ export default function ProductDetail() {
         </p>
       </div>
 
-      {/* BOTÃO */}
       <button
         onClick={handleBuy}
-        disabled={processing}
-        className="btn-primary w-full mt-6"
+        disabled={disabled}
+        className={`w-full mt-6 py-3 rounded-xl font-bold transition
+          ${
+            disabled
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-orange-600 hover:bg-orange-700 text-white"
+          }`}
       >
-        {processing ? "Processando..." : "Comprar agora"}
+        {product.bloqueado
+          ? "Indisponível"
+          : processing
+          ? "Processando..."
+          : "Comprar agora"}
       </button>
     </div>
   );
